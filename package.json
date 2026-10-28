@@ -1,0 +1,26 @@
+{
+  "name": "mast-life-os",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "expo start",
+    "android": "expo start --android",
+    "ios": "expo start --ios",
+    "web": "expo start --web"
+  },
+  "dependencies": {
+    "@react-native-async-storage/async-storage": "2.2.0",
+    "expo": "58.0.20",
+    "expo-asset": "11.0.5",
+    "expo-image-picker": "~58.0.10",
+    "expo-local-authentication": "^58.0.2",
+    "expo-notifications": "~58.1.7",
+    "react": "^19.3.0",
+    "react-native": "^0.88.0"
+  },
+  "private": true,
+  "devDependencies": {
+    "@types/react": "~19.3.0",
+    "typescript": "^7.0.2"
+  }
+}
