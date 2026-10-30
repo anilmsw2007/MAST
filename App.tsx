@@ -1336,6 +1336,12 @@ export default function App() {
   const [newChildBusCode, setNewChildBusCode] = useState('');
   const [newChildStopName, setNewChildStopName] = useState('');
 
+  // Child Fees & Monthly Auto-Reminder States
+  const [newChildSchoolFee, setNewChildSchoolFee] = useState('');
+  const [newChildBusFee, setNewChildBusFee] = useState('');
+  const [newChildDueDay, setNewChildDueDay] = useState('10');
+  const [autoSetChildReminder, setAutoSetChildReminder] = useState(true);
+
   // Bus Role State
   const [busRole, setBusRole] = useState<'parent' | 'driver'>('parent');
   const [isBusSimulating, setIsBusSimulating] = useState(false);
@@ -1469,7 +1475,7 @@ export default function App() {
   const [newDocPhoto, setNewDocPhoto] = useState<string | null>(null);
 
   // Universal Calendar Date Picker State
-  const [calendarTarget, setCalendarTarget] = useState<'appliance' | 'reminder' | 'expense' | 'member' | 'doc' | 'gold' | 'diary' | null>(null);
+  const [calendarTarget, setCalendarTarget] = useState<'appliance' | 'reminder' | 'expense' | 'member' | 'doc' | 'gold' | 'diary' | 'child_due' | null>(null);
   const [calendarViewYear, setCalendarViewYear] = useState<number>(new Date().getFullYear());
   const [calendarViewMonth, setCalendarViewMonth] = useState<number>(new Date().getMonth());
   const [calendarSelectedDate, setCalendarSelectedDate] = useState<Date>(new Date());
@@ -2603,10 +2609,57 @@ export default function App() {
       ]
     };
 
+    // Attach fee details to child profile
+    const sFeeNum = parseFloat(newChildSchoolFee) || 0;
+    const bFeeNum = parseFloat(newChildBusFee) || 0;
+    const dueDayNum = parseInt(newChildDueDay, 10) || 10;
+    newChild.schoolFee = sFeeNum > 0 ? `₹${sFeeNum}` : '';
+    newChild.busFee = bFeeNum > 0 ? `₹${bFeeNum}` : '';
+    newChild.dueDay = dueDayNum;
+
     const updated = [...schoolChildren, newChild];
     setSchoolChildren(updated);
     setActiveChildId(newChild.id);
     await AsyncStorage.setItem('@mast_v7_school_children', JSON.stringify(updated));
+
+    // Automatically generate Reminders if opted
+    const newRemindersCreated: any[] = [];
+    const monthsShort = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const curMonth = new Date().getMonth();
+    const curMonthName = monthsShort[curMonth];
+    const dayStr = dueDayNum < 10 ? `0${dueDayNum}` : `${dueDayNum}`;
+    const dueDateDisplay = `${dayStr} ${curMonthName}`;
+
+    if (autoSetChildReminder) {
+      if (sFeeNum > 0) {
+        newRemindersCreated.push({
+          id: Date.now() + 101,
+          category: 'fees',
+          titleHi: `🏫 ${newChild.name} - स्कूल फीस (${schoolName})`,
+          titleEn: `🏫 ${newChild.name} - School Fee (${schoolName})`,
+          amount: `₹${sFeeNum.toLocaleString('en-IN')}`,
+          date: dueDateDisplay,
+          urgent: true,
+          paid: false
+        });
+      }
+      if (bFeeNum > 0) {
+        newRemindersCreated.push({
+          id: Date.now() + 102,
+          category: 'fees',
+          titleHi: `🚌 ${newChild.name} - स्कूल बस फीस (${busNo})`,
+          titleEn: `🚌 ${newChild.name} - Bus Fee (${busNo})`,
+          amount: `₹${bFeeNum.toLocaleString('en-IN')}`,
+          date: dueDateDisplay,
+          urgent: false,
+          paid: false
+        });
+      }
+      if (newRemindersCreated.length > 0) {
+        const updatedReminders = [...upcomingReminders, ...newRemindersCreated];
+        saveReminders(updatedReminders);
+      }
+    }
 
     // Automatically sync school & bus to Driver Mode!
     setRegisteredSchools(prev => Array.from(new Set([schoolName, ...prev])));
@@ -2630,7 +2683,23 @@ export default function App() {
     setNewChildBusNo('');
     setNewChildBusCode('');
     setNewChildStopName('');
+    setNewChildSchoolFee('');
+    setNewChildBusFee('');
+    setNewChildDueDay('10');
     setIsAddChildModalOpen(false);
+
+    const reminderMsg = newRemindersCreated.length > 0
+      ? (lang === 'hi'
+          ? ` और ${newRemindersCreated.length} मासिक फीस रिमाइंडर भी सेट हो गए हैं!`
+          : ` and ${newRemindersCreated.length} monthly fee reminders created!`)
+      : '';
+
+    Alert.alert(
+      lang === 'hi' ? 'सफल' : 'Success',
+      lang === 'hi'
+        ? `बच्चा (${newChild.name}) व स्कूल बस सुरक्षित जुड़ गए हैं${reminderMsg}`
+        : `Child (${newChild.name}) and school bus saved${reminderMsg}`
+    );
 
     Vibration.vibrate(100);
     Alert.alert(
@@ -2820,7 +2889,7 @@ export default function App() {
   // Add Handlers
   // Calendar Control Helpers
   const openCalendar = (
-    target: 'appliance' | 'reminder' | 'expense' | 'member' | 'doc' | 'gold' | 'diary',
+    target: 'appliance' | 'reminder' | 'expense' | 'member' | 'doc' | 'gold' | 'diary' | 'child_due',
     currentVal?: string
   ) => {
     let initDate = new Date();
@@ -2867,6 +2936,8 @@ export default function App() {
       setNewGoldDate(formattedFull);
     } else if (calendarTarget === 'diary') {
       setNewDiaryDate(formattedFull);
+    } else if (calendarTarget === 'child_due') {
+      setNewChildDueDay('' + day);
     }
     setCalendarTarget(null);
   };
@@ -4383,6 +4454,13 @@ export default function App() {
                         <View style={{ backgroundColor: '#f1f5f9', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 }}>
                           <Text style={{ fontSize: 10, color: '#475569', fontWeight: 'bold' }}>{activeChild.seatNo}</Text>
                         </View>
+                        {(activeChild.schoolFee || activeChild.busFee) ? (
+                          <View style={{ backgroundColor: '#fff7ed', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, borderWidth: 1, borderColor: '#fed7aa' }}>
+                            <Text style={{ fontSize: 10, color: '#c2410c', fontWeight: 'bold' }}>
+                              💳 {activeChild.schoolFee ? `स्कूल: ${activeChild.schoolFee}` : ''} {activeChild.busFee ? `| बस: ${activeChild.busFee}` : ''}
+                            </Text>
+                          </View>
+                        ) : null}
                       </View>
                     </View>
                   </View>
@@ -6170,6 +6248,97 @@ export default function App() {
                   value={newChildStopName} 
                   onChangeText={setNewChildStopName} 
                 />
+
+                {/* --- 💰 School Fees, Bus Fees & Monthly Reminder Automation --- */}
+                <View style={{ backgroundColor: '#fff7ed', borderRadius: 14, padding: 12, marginTop: 8, borderWidth: 1, borderColor: '#fed7aa', gap: 10 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <Text style={{ fontSize: 13, fontWeight: 'bold', color: '#c2410c' }}>
+                      💰 {lang === 'hi' ? 'स्कूल व बस फीस (ऑटो रिमाइंडर)' : 'School & Bus Fees (Auto-Reminder)'}
+                    </Text>
+                    <TouchableOpacity
+                      style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}
+                      onPress={() => setAutoSetChildReminder(p => !p)}
+                    >
+                      <View style={[styles.checkCircle, autoSetChildReminder && { backgroundColor: '#ea580c', borderColor: '#ea580c' }]}>
+                        <Text style={{ color: '#fff', fontSize: 12, fontWeight: 'bold' }}>{autoSetChildReminder ? '✓' : ''}</Text>
+                      </View>
+                      <Text style={{ fontSize: 11, fontWeight: 'bold', color: '#7c2d12' }}>
+                        {lang === 'hi' ? 'रिमाइंडर जोड़ें' : 'Set Reminders'}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+
+                  <Text style={{ fontSize: 11, color: '#9a3412', lineHeight: 16 }}>
+                    {lang === 'hi'
+                      ? 'यहाँ फीस दर्ज करने से आपके "रिमाइंडर टैब" में हर महीने की अंतिम तारीख का अलर्ट अपने-आप सक्रिय हो जाएगा।'
+                      : 'Entering fee details automatically creates monthly fee alerts in your Reminders tab.'}
+                  </Text>
+
+                  <View style={{ flexDirection: 'row', gap: 10 }}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={[styles.inputLabel, { fontSize: 11, color: '#7c2d12' }]}>
+                        🏫 {lang === 'hi' ? 'मासिक स्कूल फीस' : 'Monthly School Fee'}
+                      </Text>
+                      <TextInput 
+                        style={[styles.formInput, { backgroundColor: '#ffffff' }]} 
+                        placeholder="₹3,500" 
+                        placeholderTextColor="#94a3b8"
+                        keyboardType="numeric"
+                        value={newChildSchoolFee} 
+                        onChangeText={setNewChildSchoolFee} 
+                      />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={[styles.inputLabel, { fontSize: 11, color: '#7c2d12' }]}>
+                        🚌 {lang === 'hi' ? 'मासिक बस फीस' : 'Monthly Bus Fee'}
+                      </Text>
+                      <TextInput 
+                        style={[styles.formInput, { backgroundColor: '#ffffff' }]} 
+                        placeholder="₹1,800" 
+                        placeholderTextColor="#94a3b8"
+                        keyboardType="numeric"
+                        value={newChildBusFee} 
+                        onChangeText={setNewChildBusFee} 
+                      />
+                    </View>
+                  </View>
+
+                  <View>
+                    <Text style={[styles.inputLabel, { fontSize: 11, color: '#7c2d12' }]}>
+                      📅 {lang === 'hi' ? 'महीने की देय तारीख (Due Date of Month)' : 'Monthly Due Date'}
+                    </Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                      <TextInput 
+                        style={[styles.formInput, { flex: 1, backgroundColor: '#ffffff' }]} 
+                        placeholder="10" 
+                        placeholderTextColor="#94a3b8"
+                        keyboardType="numeric"
+                        value={newChildDueDay} 
+                        onChangeText={setNewChildDueDay} 
+                      />
+                      <TouchableOpacity 
+                        style={styles.calendarPickIconBtn}
+                        onPress={() => openCalendar('child_due', `${newChildDueDay} ${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][new Date().getMonth()]} ${new Date().getFullYear()}`)}
+                      >
+                        <Text style={{ fontSize: 18 }}>📅</Text>
+                      </TouchableOpacity>
+                    </View>
+                    <View style={{ flexDirection: 'row', gap: 6, marginTop: 4 }}>
+                      {['5 तारीख', '10 तारीख', '15 तारीख', '25 तारीख'].map(dStr => {
+                        const num = dStr.replace(/[^0-9]/g, '');
+                        return (
+                          <TouchableOpacity
+                            key={dStr}
+                            style={[styles.chip, newChildDueDay === num && styles.chipActive, { paddingVertical: 3, paddingHorizontal: 6 }]}
+                            onPress={() => setNewChildDueDay(num)}
+                          >
+                            <Text style={[styles.chipText, newChildDueDay === num && styles.chipTextActive, { fontSize: 10 }]}>{dStr}</Text>
+                          </TouchableOpacity>
+                        );
+                      })}
+                    </View>
+                  </View>
+                </View>
               </View>
             </ScrollView>
 
