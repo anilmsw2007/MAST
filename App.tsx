@@ -3563,6 +3563,7 @@ export default function App() {
   // Calculations for Household Budget
   const totalSpent = expenses.reduce((acc, curr) => acc + curr.amount, 0);
   const totalSavings = Math.max(0, monthlyBudget - totalSpent);
+  const budgetSpentPct = monthlyBudget > 0 ? Math.min(100, Math.round((totalSpent / monthlyBudget) * 100)) : 0;
   const rationTotal = expenses.filter(e => e.category === 'ration').reduce((a, b) => a + b.amount, 0);
   const feesTotal = expenses.filter(e => e.category === 'fees').reduce((a, b) => a + b.amount, 0);
   const medTotal = expenses.filter(e => e.category === 'med').reduce((a, b) => a + b.amount, 0);
