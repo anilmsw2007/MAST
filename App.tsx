@@ -1230,6 +1230,21 @@ const DAILY_QUOTES = [
   }
 ];
 
+
+  // Dynamic Time-Aware Greeting (Morning, Afternoon, Evening, Night)
+  const getDynamicGreeting = (l: 'hi' | 'en') => {
+    const hour = new Date().getHours();
+    if (hour >= 5 && hour < 12) {
+      return l === 'hi' ? 'शुभ प्रभात • परिवार' : 'Good Morning • Family';
+    } else if (hour >= 12 && hour < 17) {
+      return l === 'hi' ? 'शुभ दोपहर • परिवार' : 'Good Afternoon • Family';
+    } else if (hour >= 17 && hour < 21) {
+      return l === 'hi' ? 'शुभ संध्या • परिवार' : 'Good Evening • Family';
+    } else {
+      return l === 'hi' ? 'शुभ रात्रि • परिवार' : 'Good Night • Family';
+    }
+  };
+
 const getTodayQuote = (l: 'hi' | 'en') => {
   const dayIndex = (new Date().getDate() - 1) % DAILY_QUOTES.length;
   const item = DAILY_QUOTES[dayIndex] || DAILY_QUOTES[0];
@@ -1393,7 +1408,9 @@ export default function App() {
 
   // Household Expenses (Clean - Ready for User)
   const [expenses, setExpenses] = useState<any[]>([]);
-  const monthlyIncome = 50000;
+  const [monthlyBudget, setMonthlyBudget] = useState<number>(0);
+  const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(false);
+  const [tempBudgetInput, setTempBudgetInput] = useState('');
 
   // Family Members Directory (Clean - Populated on Onboarding)
   const [familyMembers, setFamilyMembers] = useState<any[]>([]);
@@ -1596,6 +1613,12 @@ export default function App() {
         const storedExpenses = await AsyncStorage.getItem('@mast_v7_expenses');
         if (storedExpenses) setExpenses(JSON.parse(storedExpenses));
 
+        const storedBudget = await AsyncStorage.getItem('@mast_v7_monthly_budget');
+        if (storedBudget) {
+          const b = parseInt(storedBudget, 10);
+          if (!isNaN(b)) setMonthlyBudget(b);
+        }
+
         const storedMembers = await AsyncStorage.getItem('@mast_v7_members');
         if (storedMembers) setFamilyMembers(JSON.parse(storedMembers));
 
@@ -1641,6 +1664,13 @@ export default function App() {
   const saveReminders = async (newRem: any[]) => {
     setUpcomingReminders(newRem);
     await AsyncStorage.setItem('@mast_v7_reminders', JSON.stringify(newRem));
+  };
+
+  
+  const saveBudget = async (amount: number) => {
+    setMonthlyBudget(amount);
+    await AsyncStorage.setItem('@mast_v7_monthly_budget', amount.toString());
+    setIsBudgetModalOpen(false);
   };
 
   const saveExpenses = async (newExp: any[]) => {
@@ -2994,6 +3024,21 @@ export default function App() {
     });
   };
 
+  
+  // Dynamic subtitle for Home Medicine Quick Tile
+  const getMedTileSubtitle = () => {
+    if (medicines.length === 0) {
+      return lang === 'hi' ? 'दवा शेड्यूल करें +' : 'Schedule medicine +';
+    }
+    const untaken = medicines.filter(m => !takenMeds[m.id]);
+    if (untaken.length > 0) {
+      const next = untaken[0];
+      const name = getLocalized(next, 'name');
+      return `${name.slice(0, 12)}.. • ${next.time}`;
+    }
+    return lang === 'hi' ? '✓ आज की दवाएं पूरी' : '✓ All meds taken today';
+  };
+
   const handleTabPress = (tabName: TabType) => {
     const idx = TABS.indexOf(tabName);
     if (idx !== -1 && pagerRef.current) {
@@ -3105,7 +3150,7 @@ export default function App() {
             <View style={styles.heroCard}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.heroPre}>{t.goodMorning}</Text>
+                  <Text style={styles.heroPre}>{getDynamicGreeting(lang)}</Text>
                   <Text style={styles.heroMain}>{t.todayHero}</Text>
                 </View>
                 <View style={styles.dateTag}>
@@ -3211,7 +3256,7 @@ export default function App() {
                     <View style={[styles.tileTag, { backgroundColor: '#ffe4e6' }]}><Text style={[styles.tileTagText, { color: '#e11d48' }]}>Rx</Text></View>
                   </View>
                   <Text style={styles.tileTitle}>{t.tileMed}</Text>
-                  <Text style={styles.tileSub}>{t.tileMedSub}</Text>
+                  <Text style={styles.tileSub}>{getMedTileSubtitle()}</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity style={[styles.tileCard, { backgroundColor: '#faf5ff', borderColor: '#e9d5ff' }]} onPress={() => handleTabPress('diary')}>
@@ -3227,18 +3272,31 @@ export default function App() {
 
             {/* Monthly Expense & Budget WITH DYNAMIC CALCULATIONS & RECENT EXPENSES LIST */}
             <View style={styles.budgetCard}>
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                <View>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <View style={{ flex: 1, marginRight: 8 }}>
                   <Text style={styles.budgetHeading}>💰 {t.budgetTitle}</Text>
                   <Text style={styles.budgetSub}>
-                    {lang === 'hi'
-                      ? `खर्च: ₹${totalSpent.toLocaleString()} • बचत: ₹${totalSavings.toLocaleString()}`
-                      : `Spent: ₹${totalSpent.toLocaleString()} • Saved: ₹${totalSavings.toLocaleString()}`}
+                    {monthlyBudget > 0
+                      ? (lang === 'hi' 
+                          ? `बजट: ₹${monthlyBudget.toLocaleString()} • खर्च: ₹${totalSpent.toLocaleString()} (${budgetSpentPct}%)` 
+                          : `Budget: ₹${monthlyBudget.toLocaleString()} • Spent: ₹${totalSpent.toLocaleString()} (${budgetSpentPct}%)`)
+                      : (lang === 'hi' ? 'मासिक बजट तय नहीं है • नीचे सेट करें' : 'Budget not set • Tap to set budget')}
                   </Text>
                 </View>
-                <TouchableOpacity style={styles.addExpenseBtn} onPress={() => setIsAddExpenseModalOpen(true)}>
-                  <Text style={styles.addExpenseBtnText}>{t.addExpenseBtn}</Text>
-                </TouchableOpacity>
+                <View style={{ flexDirection: 'row', gap: 6 }}>
+                  <TouchableOpacity 
+                    style={[styles.addExpenseBtn, { backgroundColor: '#f1f5f9', borderWidth: 1, borderColor: '#cbd5e1' }]} 
+                    onPress={() => {
+                      setTempBudgetInput(monthlyBudget > 0 ? monthlyBudget.toString() : '');
+                      setIsBudgetModalOpen(true);
+                    }}
+                  >
+                    <Text style={{ color: '#0f172a', fontSize: 11, fontWeight: 'bold' }}>✏️ {lang === 'hi' ? 'बजट' : 'Budget'}</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity style={styles.addExpenseBtn} onPress={() => setIsAddExpenseModalOpen(true)}>
+                    <Text style={styles.addExpenseBtnText}>{t.addExpenseBtn}</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
 
               <View style={styles.multiBar}>
@@ -3469,23 +3527,30 @@ export default function App() {
             {/* 3. DOCUMENTS SUBTAB WITH MEMBER FILTER CHIPS */}
             {vaultSubtab === 'docs' && (
               <View style={{ gap: 12 }}>
-                {/* Member Filter Chips */}
+                {/* Dynamic Member Filter Chips */}
                 <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-                  {[
-                    { key: 'all', label: lang === 'hi' ? 'सभी डॉक्स' : 'All Docs' },
-                    { key: 'babu', label: lang === 'hi' ? 'बाबूजी' : 'Father' },
-                    { key: 'amma', label: lang === 'hi' ? 'अम्मा' : 'Mother' },
-                    { key: 'self', label: lang === 'hi' ? 'स्वयं' : 'Self' },
-                    { key: 'kids', label: lang === 'hi' ? 'बच्चे' : 'Kids' }
-                  ].map(f => (
-                    <TouchableOpacity
-                      key={f.key}
-                      style={[styles.chip, docMemberFilter === f.key && styles.chipActive]}
-                      onPress={() => setDocMemberFilter(f.key as any)}
-                    >
-                      <Text style={[styles.chipText, docMemberFilter === f.key && styles.chipTextActive]}>{f.label}</Text>
-                    </TouchableOpacity>
-                  ))}
+                  <TouchableOpacity
+                    style={[styles.chip, docMemberFilter === 'all' && styles.chipActive]}
+                    onPress={() => setDocMemberFilter('all')}
+                  >
+                    <Text style={[styles.chipText, docMemberFilter === 'all' && styles.chipTextActive]}>
+                      {lang === 'hi' ? 'सभी दस्तावेज़' : 'All Documents'}
+                    </Text>
+                  </TouchableOpacity>
+                  {familyMembers.map(m => {
+                    const isSelected = docMemberFilter === m.name;
+                    return (
+                      <TouchableOpacity
+                        key={m.id}
+                        style={[styles.chip, isSelected && styles.chipActive]}
+                        onPress={() => setDocMemberFilter(m.name)}
+                      >
+                        <Text style={[styles.chipText, isSelected && styles.chipTextActive]}>
+                          {m.avatar} {m.name}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
                 </View>
 
                 {familyDocs.filter(doc => docMemberFilter === 'all' || doc.member === docMemberFilter).length === 0 ? (
@@ -4396,6 +4461,26 @@ export default function App() {
                   🔒 {lang === 'hi' ? 'ईमेल ऑटो-बैकअप सुरक्षित रूप से लिंक है' : 'Auto Email Backup Linked Safely'}
                 </Text>
               </View>
+
+              <TouchableOpacity
+                style={{
+                  backgroundColor: '#059669',
+                  borderRadius: 12,
+                  paddingVertical: 10,
+                  paddingHorizontal: 14,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 8,
+                  marginTop: 10
+                }}
+                onPress={exportFullFamilyBackup}
+              >
+                <Text style={{ fontSize: 16 }}>📤</Text>
+                <Text style={{ color: '#fff', fontSize: 13, fontWeight: 'bold' }}>
+                  {lang === 'hi' ? 'पूरा डेटा बैकअप ईमेल / WhatsApp पर भेजें' : 'Send Full Data Backup (Email / WhatsApp)'}
+                </Text>
+              </TouchableOpacity>
             </View>
 
             {/* Family Members Directory WITH + ADD MEMBER & DELETE */}
@@ -4608,6 +4693,17 @@ export default function App() {
                     value={newMedDose} 
                     onChangeText={setNewMedDose} 
                   />
+                  <View style={{ flexDirection: 'row', gap: 4, marginTop: 4, flexWrap: 'wrap' }}>
+                    {['1 गोली खाने बाद', '1 गोली खाली पेट', '2 गोली'].map(ch => (
+                      <TouchableOpacity
+                        key={ch}
+                        style={[styles.chip, { paddingVertical: 3, paddingHorizontal: 6 }]}
+                        onPress={() => setNewMedDose(ch)}
+                      >
+                        <Text style={{ fontSize: 10, fontWeight: 'bold', color: '#0f172a' }}>{ch}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
                 </View>
               </View>
 
@@ -4683,6 +4779,27 @@ export default function App() {
                     value={newVaultWarranty} 
                     onChangeText={setNewVaultWarranty} 
                   />
+                  <View style={{ flexDirection: 'row', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
+                    {[
+                      { label: '1 वर्ष', years: 1 },
+                      { label: '2 वर्ष', years: 2 },
+                      { label: '5 वर्ष', years: 5 },
+                      { label: '10 वर्ष', years: 10 }
+                    ].map(w => (
+                      <TouchableOpacity
+                        key={w.label}
+                        style={[styles.chip, { paddingVertical: 3, paddingHorizontal: 6 }]}
+                        onPress={() => {
+                          const d = new Date();
+                          d.setFullYear(d.getFullYear() + w.years);
+                          const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                          setNewVaultWarranty(`${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`);
+                        }}
+                      >
+                        <Text style={{ fontSize: 10, fontWeight: 'bold', color: '#0f172a' }}>+{w.label}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
                 </View>
               </View>
 
@@ -4826,22 +4943,28 @@ export default function App() {
 
             <View style={{ gap: 12, marginVertical: 14 }}>
               <Text style={styles.inputLabel}>{t.docMemberPrompt}</Text>
-              <View style={{ flexDirection: 'row', gap: 8 }}>
-                {[
-                  { key: 'babu', label: lang === 'hi' ? 'बाबूजी' : 'Father' },
-                  { key: 'amma', label: lang === 'hi' ? 'अम्मा' : 'Mother' },
-                  { key: 'self', label: lang === 'hi' ? 'स्वयं' : 'Self' },
-                  { key: 'kids', label: lang === 'hi' ? 'बच्चे' : 'Kids' }
-                ].map(m => (
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingVertical: 4 }}>
+                {familyMembers.length > 0 ? (
+                  familyMembers.map(m => (
+                    <TouchableOpacity 
+                      key={m.id} 
+                      style={[styles.chip, newDocMember === m.name && styles.chipActive]}
+                      onPress={() => setNewDocMember(m.name)}
+                    >
+                      <Text style={[styles.chipText, newDocMember === m.name && styles.chipTextActive]}>
+                        {m.avatar} {m.name}
+                      </Text>
+                    </TouchableOpacity>
+                  ))
+                ) : (
                   <TouchableOpacity 
-                    key={m.key} 
-                    style={[styles.chip, newDocMember === m.key && styles.chipActive]}
-                    onPress={() => setNewDocMember(m.key)}
+                    style={[styles.chip, styles.chipActive]}
+                    onPress={() => setNewDocMember('Self')}
                   >
-                    <Text style={[styles.chipText, newDocMember === m.key && styles.chipTextActive]}>{m.label}</Text>
+                    <Text style={[styles.chipText, styles.chipTextActive]}>👤 {lang === 'hi' ? 'स्वयं' : 'Self'}</Text>
                   </TouchableOpacity>
-                ))}
-              </View>
+                )}
+              </ScrollView>
 
               <Text style={styles.inputLabel}>{t.docTitlePrompt}</Text>
               <TextInput 
@@ -5216,15 +5339,29 @@ export default function App() {
               style={[styles.sosActionBtn, { backgroundColor: '#dc2626' }]}
               onPress={handleSendSOS}
             >
-              <Text style={styles.sosActionBtnText}>{lang === 'hi' ? '🚨 परिवार को SOS अलर्ट भेजें' : '🚨 Send SOS Alert to Family'}</Text>
+              <Text style={styles.sosActionBtnText}>{lang === 'hi' ? '🚨 परिवार को तुरंत SOS अलर्ट भेजें' : '🚨 Send SOS Alert to Family'}</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity 
-              style={[styles.sosActionBtn, { backgroundColor: '#0284c7', marginTop: 10 }]}
-              onPress={() => { Linking.openURL('tel:112'); setIsSOSModalOpen(false); }}
-            >
-              <Text style={styles.sosActionBtnText}>{lang === 'hi' ? '📞 112 राष्ट्रीय हेल्पलाइन कॉल करें' : '📞 Call 112 Helpline'}</Text>
-            </TouchableOpacity>
+            <View style={{ flexDirection: 'row', gap: 8, marginTop: 10 }}>
+              <TouchableOpacity 
+                style={[styles.sosActionBtn, { flex: 1, backgroundColor: '#0284c7' }]}
+                onPress={() => { Linking.openURL('tel:112'); setIsSOSModalOpen(false); }}
+              >
+                <Text style={styles.sosActionBtnText}>📞 112 राष्ट्रीय</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={[styles.sosActionBtn, { flex: 1, backgroundColor: '#059669' }]}
+                onPress={() => { Linking.openURL('tel:108'); setIsSOSModalOpen(false); }}
+              >
+                <Text style={styles.sosActionBtnText}>🚑 108 एम्बुलेंस</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={[styles.sosActionBtn, { flex: 1, backgroundColor: '#4338ca' }]}
+                onPress={() => { Linking.openURL('tel:100'); setIsSOSModalOpen(false); }}
+              >
+                <Text style={styles.sosActionBtnText}>👮 100 पुलिस</Text>
+              </TouchableOpacity>
+            </View>
 
             <TouchableOpacity style={{ padding: 12, alignItems: 'center', marginTop: 6 }} onPress={() => setIsSOSModalOpen(false)}>
               <Text style={{ color: '#64748b', fontSize: 14, fontWeight: 'bold' }}>{lang === 'hi' ? 'रद्द करें (Cancel)' : 'Cancel'}</Text>
@@ -5509,10 +5646,70 @@ export default function App() {
       </Modal>
 
 
+
+      {/* ================= MODAL: SET MONTHLY BUDGET ================= */}
+      <Modal visible={isBudgetModalOpen} transparent animationType="fade">
+        <View style={styles.modalBackdrop}>
+          <View style={[styles.modalContent, { backgroundColor: '#fff' }]}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Text style={styles.modalHeaderTitle}>
+                💰 {lang === 'hi' ? 'मासिक पारिवारिक बजट सेट करें' : 'Set Monthly Budget'}
+              </Text>
+              <TouchableOpacity onPress={() => setIsBudgetModalOpen(false)}>
+                <Text style={{ fontSize: 22, color: '#64748b', fontWeight: 'bold' }}>✕</Text>
+              </TouchableOpacity>
+            </View>
+
+            <Text style={{ fontSize: 13, color: '#64748b', marginTop: 6, lineHeight: 18 }}>
+              {lang === 'hi'
+                ? 'अपने परिवार का मासिक खर्च लक्ष्य तय करें ताकि बचत व खर्च का सही प्रतिशत दिखे।'
+                : 'Define your family monthly spending target to track savings and expense breakdown.'}
+            </Text>
+
+            <View style={{ marginVertical: 14 }}>
+              <Text style={styles.inputLabel}>{lang === 'hi' ? 'मासिक बजट राशि (₹)' : 'Monthly Budget (₹)'}</Text>
+              <TextInput
+                style={[styles.formInput, { fontSize: 18, fontWeight: 'bold' }]}
+                placeholder="₹35,000"
+                placeholderTextColor="#94a3b8"
+                keyboardType="numeric"
+                value={tempBudgetInput}
+                onChangeText={setTempBudgetInput}
+              />
+              <View style={{ flexDirection: 'row', gap: 6, marginTop: 8 }}>
+                {[20000, 35000, 50000, 75000].map(amt => (
+                  <TouchableOpacity
+                    key={amt}
+                    style={[styles.chip, { paddingVertical: 4, paddingHorizontal: 8 }]}
+                    onPress={() => setTempBudgetInput(amt.toString())}
+                  >
+                    <Text style={{ fontSize: 11, fontWeight: 'bold', color: '#0f172a' }}>₹{amt.toLocaleString()}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+
+            <TouchableOpacity
+              style={[styles.saveSubmitBtn, { backgroundColor: '#10b981', marginTop: 4 }]}
+              onPress={() => {
+                const b = parseInt(tempBudgetInput, 10);
+                if (isNaN(b) || b <= 0) {
+                  Alert.alert(lang === 'hi' ? 'अमान्य राशि' : 'Invalid Amount', lang === 'hi' ? 'कृपया सही राशि भरें।' : 'Please enter a valid amount.');
+                  return;
+                }
+                saveBudget(b);
+              }}
+            >
+              <Text style={styles.saveSubmitBtnText}>✓ {lang === 'hi' ? 'बजट सुरक्षित करें' : 'Save Budget'}</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
       {/* ================= MODAL: PHONE SECURITY SCREEN LOCK ================= */}
       <Modal visible={isAppLocked} animationType="fade" transparent={false}>
         <SafeAreaView style={[styles.lockScreenContainer, { paddingTop: TOP_SAFE_PADDING }]}>
-          <StatusBar barStyle="light-content" backgroundColor="#0f172a" />
+          <StatusBar barStyle="dark-content" backgroundColor="#ffffff" />
           <View style={styles.lockScreenCard}>
             <View style={styles.lockIconCircle}>
               <Text style={{ fontSize: 44 }}>🛡️</Text>
@@ -5665,28 +5862,32 @@ const styles = StyleSheet.create({
   unlockBigBtn: { width: '100%', backgroundColor: '#f97316', paddingVertical: 14, borderRadius: 14, alignItems: 'center' },
   unlockBigBtnText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
 
-  container: { flex: 1, backgroundColor: '#0f172a' },
+  container: { flex: 1, backgroundColor: '#f8fafc' },
   header: {
     paddingTop: TOP_SAFE_PADDING,
-    paddingBottom: 16,
+    paddingBottom: 14,
     paddingHorizontal: 18,
-    backgroundColor: '#0f172a',
+    backgroundColor: '#ffffff',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     borderBottomWidth: 1,
-    borderBottomColor: '#1e293b'
+    borderBottomColor: '#f1f5f9',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 4
   },
-  brandContainer: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  logoBadge: { width: 44, height: 44, borderRadius: 14, backgroundColor: '#f97316', justifyContent: 'center', alignItems: 'center' },
+  brandContainer: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  logoBadge: { width: 42, height: 42, borderRadius: 12, backgroundColor: '#f97316', justifyContent: 'center', alignItems: 'center' },
   logoText: { color: '#fff', fontSize: 22, fontWeight: 'bold' },
-  brandTitle: { color: '#fff', fontSize: 20, fontWeight: 'bold', letterSpacing: 0.5 },
-  brandTagline: { color: '#fdba74', fontSize: 13, fontWeight: '600', marginTop: 2 },
+  brandTitle: { color: '#0f172a', fontSize: 20, fontWeight: 'bold', letterSpacing: 0.5 },
+  brandTagline: { color: '#ea580c', fontSize: 12, fontWeight: '700', marginTop: 1 },
   headerActions: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   sosBtn: { width: 38, height: 38, borderRadius: 19, backgroundColor: '#dc2626', justifyContent: 'center', alignItems: 'center' },
   sosBtnText: { fontSize: 18 },
-  langBtn: { paddingHorizontal: 12, paddingVertical: 7, borderRadius: 16, backgroundColor: '#1e293b', borderWidth: 1, borderColor: '#334155' },
-  langBtnText: { color: '#f8fafc', fontSize: 13, fontWeight: 'bold' },
+  langBtn: { paddingHorizontal: 12, paddingVertical: 7, borderRadius: 16, backgroundColor: '#f8fafc', borderWidth: 1, borderColor: '#cbd5e1' },
+  langBtnText: { color: '#0f172a', fontSize: 13, fontWeight: 'bold' },
   heartBtn: { width: 38, height: 38, borderRadius: 19, backgroundColor: 'rgba(244, 63, 94, 0.2)', borderWidth: 1, borderColor: '#f43f5e', justifyContent: 'center', alignItems: 'center' },
   heartBtnText: { fontSize: 16 },
 
