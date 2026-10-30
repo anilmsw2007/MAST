@@ -1342,6 +1342,15 @@ export default function App() {
   const [newChildDueDay, setNewChildDueDay] = useState('10');
   const [autoSetChildReminder, setAutoSetChildReminder] = useState(true);
   const [editingChildId, setEditingChildId] = useState<string | null>(null);
+  const [editingMedId, setEditingMedId] = useState<number | null>(null);
+  const [editingApplianceId, setEditingApplianceId] = useState<number | null>(null);
+  const [editingGoldId, setEditingGoldId] = useState<number | null>(null);
+  const [editingDocId, setEditingDocId] = useState<number | null>(null);
+  const [editingReminderId, setEditingReminderId] = useState<number | null>(null);
+  const [editingMemberId, setEditingMemberId] = useState<number | null>(null);
+  const [editingDiaryId, setEditingDiaryId] = useState<number | null>(null);
+  const [diarySearchQuery, setDiarySearchQuery] = useState('');
+  const [selectedFullPhoto, setSelectedFullPhoto] = useState<string | null>(null);
 
   // Bus Role State
   const [busRole, setBusRole] = useState<'parent' | 'driver'>('parent');
@@ -1416,7 +1425,7 @@ export default function App() {
 
   // Household Expenses (Clean - Ready for User)
   const [expenses, setExpenses] = useState<any[]>([]);
-  const [monthlyBudget, setMonthlyBudget] = useState<number>(0);
+  const [monthlyBudget, setMonthlyBudget] = useState<number>(35000);
   const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(false);
   const [tempBudgetInput, setTempBudgetInput] = useState('');
 
@@ -2596,6 +2605,154 @@ export default function App() {
   };
 
 
+
+  // Open / Edit Medicine
+  const openAddMedModal = () => {
+    setEditingMedId(null);
+    setNewMedName('');
+    setNewMedTime('08:00 AM');
+    setNewMedDose('');
+    setNewMedDoc('');
+    setNewMedPhoto(null);
+    setNewMedPatient(userProfile?.name ? `${userProfile.name} (स्वयं)` : 'स्वयं (Self)');
+    setIsAddMedModalOpen(true);
+  };
+  const openEditMedModal = (m: any) => {
+    setEditingMedId(m.id);
+    setNewMedName(m.nameHi || m.nameEn || m.name || '');
+    setNewMedTime(m.time || '08:00 AM');
+    setNewMedDose(m.doseHi || m.doseEn || m.dose || '');
+    setNewMedDoc(m.doctorHi || m.doctorEn || m.doctor || '');
+    setNewMedPhoto(m.imageUri || null);
+    setNewMedPatient(m.patientHi || m.patientEn || m.patient || 'स्वयं');
+    setIsAddMedModalOpen(true);
+  };
+
+  // Open / Edit Appliance
+  const openAddApplianceModal = () => {
+    setEditingApplianceId(null);
+    setNewVaultName('');
+    setNewVaultPrice('');
+    setNewVaultWarranty('');
+    setNewVaultStore('');
+    setNewVaultPhoto(null);
+    setIsAddApplianceModalOpen(true);
+  };
+  const openEditApplianceModal = (a: any) => {
+    setEditingApplianceId(a.id);
+    setNewVaultName(a.nameHi || a.nameEn || a.name || '');
+    setNewVaultPrice((a.price || '').replace(/[^0-9.]/g, ''));
+    setNewVaultWarranty(a.warrantyEnd || '');
+    setNewVaultStore(a.storeHi || a.storeEn || a.store || '');
+    setNewVaultPhoto(a.imageUri || null);
+    setIsAddApplianceModalOpen(true);
+  };
+
+  // Open / Edit Gold
+  const openAddGoldModal = () => {
+    setEditingGoldId(null);
+    setNewGoldTitle('');
+    setNewGoldWeight('');
+    setNewGoldPurity('22K 916 BIS');
+    setNewGoldValue('');
+    setNewGoldLocker('SBI Locker #104');
+    setNewGoldJeweller('');
+    setNewGoldDate('');
+    setNewGoldPhoto(null);
+    setIsAddGoldModalOpen(true);
+  };
+  const openEditGoldModal = (g: any) => {
+    setEditingGoldId(g.id);
+    setNewGoldTitle(g.titleHi || g.titleEn || g.title || '');
+    setNewGoldWeight((g.weight || '').replace(/[^0-9.]/g, ''));
+    setNewGoldPurity(g.purityHi || g.purityEn || g.purity || '22K 916 BIS');
+    setNewGoldValue((g.value || '').replace(/[^0-9.]/g, ''));
+    setNewGoldLocker(g.lockerHi || g.lockerEn || g.locker || 'SBI Locker #104');
+    setNewGoldJeweller(g.jewellerHi || g.jewellerEn || g.jeweller || '');
+    setNewGoldDate(g.purchaseDate || '');
+    setNewGoldPhoto(g.imageUri || null);
+    setIsAddGoldModalOpen(true);
+  };
+
+  // Open / Edit Document
+  const openAddDocModal = () => {
+    setEditingDocId(null);
+    setNewDocMember('self');
+    setNewDocTitle('');
+    setNewDocNumber('');
+    setNewDocExpiry('');
+    setNewDocPhoto(null);
+    setIsAddDocModalOpen(true);
+  };
+  const openEditDocModal = (d: any) => {
+    setEditingDocId(d.id);
+    setNewDocMember(d.member || 'self');
+    setNewDocTitle(d.titleHi || d.titleEn || d.title || '');
+    setNewDocNumber(d.docNo || '');
+    setNewDocExpiry(d.expiry || '');
+    setNewDocPhoto(d.imageUri || null);
+    setIsAddDocModalOpen(true);
+  };
+
+  // Open / Edit Reminder
+  const openAddReminderModal = () => {
+    setEditingReminderId(null);
+    setNewRemTitle('');
+    setNewRemAmount('');
+    setNewRemDate('05 Nov');
+    setNewRemCategory('bills');
+    setNewRemUrgent(false);
+    setIsAddReminderModalOpen(true);
+  };
+  const openEditReminderModal = (r: any) => {
+    setEditingReminderId(r.id);
+    setNewRemTitle(r.titleHi || r.titleEn || r.title || '');
+    setNewRemAmount((r.amount || '').replace(/[^0-9.]/g, ''));
+    setNewRemDate(r.date || '');
+    setNewRemCategory(r.category || 'bills');
+    setNewRemUrgent(!!r.urgent);
+    setIsAddReminderModalOpen(true);
+  };
+
+  // Open / Edit Family Member
+  const openAddMemberModal = () => {
+    setEditingMemberId(null);
+    setNewMemberName('');
+    setNewMemberRelation('');
+    setNewMemberPhone('');
+    setNewMemberAge('');
+    setNewMemberDob('');
+    setNewMemberAvatar('🧑');
+    setIsAddMemberModalOpen(true);
+  };
+  const openEditMemberModal = (m: any) => {
+    setEditingMemberId(m.id);
+    setNewMemberName(m.name || m.nameHi || m.nameEn || '');
+    setNewMemberRelation(m.relationHi || m.relationEn || m.role || '');
+    setNewMemberPhone(m.phone || '');
+    setNewMemberAge(m.age ? String(m.age) : '');
+    setNewMemberDob(m.dob || '');
+    setNewMemberAvatar(m.avatar || '🧑');
+    setIsAddMemberModalOpen(true);
+  };
+
+  // Open / Edit Diary
+  const openAddDiaryModal = () => {
+    setEditingDiaryId(null);
+    setNewDiaryTitle('');
+    setNewDiaryContent('');
+    setNewDiaryType('kavita');
+    setNewDiaryDate('आज');
+    setIsAddDiaryModalOpen(true);
+  };
+  const openEditDiaryModal = (entry: any) => {
+    setEditingDiaryId(entry.id);
+    setNewDiaryTitle(entry.titleHi || entry.titleEn || entry.title || '');
+    setNewDiaryContent(entry.contentHi || entry.contentEn || entry.content || '');
+    setNewDiaryType(entry.type || 'kavita');
+    setNewDiaryDate(entry.date || 'आज');
+    setIsAddDiaryModalOpen(true);
+  };
   // Open Add Child (reset all form fields)
   const openAddChildModal = () => {
     setEditingChildId(null);
@@ -3366,8 +3523,9 @@ export default function App() {
       return;
     }
     const patientName = newMedPatient || (lang === 'hi' ? 'स्वयं (Self)' : 'Self');
-    const newEntry = {
-      id: Date.now(),
+    const existing = medicines.find(m => m.id === editingMedId);
+    const savedEntry = {
+      id: editingMedId || Date.now(),
       nameHi: newMedName.trim(),
       nameEn: newMedName.trim(),
       time: newMedTime,
@@ -3375,20 +3533,22 @@ export default function App() {
       doseEn: newMedDose || '1 pill',
       doctorHi: newMedDoc || 'डॉ. निजी चिकित्सक',
       doctorEn: newMedDoc || 'Dr. Family Physician',
-      hospitalHi: 'पारिवारिक क्लिनिक',
-      hospitalEn: 'Family Clinic',
+      hospitalHi: existing?.hospitalHi || 'पारिवारिक क्लिनिक',
+      hospitalEn: existing?.hospitalEn || 'Family Clinic',
       patientHi: patientName,
       patientEn: patientName,
-      date: lang === 'hi' ? 'आज' : 'Today',
+      date: existing?.date || (lang === 'hi' ? 'आज' : 'Today'),
       imageUri: newMedPhoto
     };
-    await saveMeds([...medicines, newEntry]);
+    const updated = editingMedId ? medicines.map(m => m.id === editingMedId ? savedEntry : m) : [...medicines, savedEntry];
+    await saveMeds(updated);
     setNewMedName('');
     setNewMedDose('');
     setNewMedDoc('');
     setNewMedPhoto(null);
+    setEditingMedId(null);
     setIsAddMedModalOpen(false);
-    Alert.alert(lang === 'hi' ? 'सफल' : 'Success', lang === 'hi' ? 'नई दवाई और पर्चा सुरक्षित सेव हो गए!' : 'Medicine saved successfully!');
+    Alert.alert(lang === 'hi' ? 'सफल' : 'Success', editingMedId ? (lang === 'hi' ? 'दवाई की जानकारी अपडेट हो गई!' : 'Medicine updated!') : (lang === 'hi' ? 'नई दवाई और पर्चा सुरक्षित सेव हो गए!' : 'Medicine saved successfully!'));
   };
 
   const handleAddNewAppliance = async () => {
@@ -3396,27 +3556,30 @@ export default function App() {
       Alert.alert('Notice', lang === 'hi' ? 'सामान का नाम लिखें' : 'Please enter item name');
       return;
     }
-    const newApp = {
-      id: Date.now(),
+    const existing = appliances.find(a => a.id === editingApplianceId);
+    const savedApp = {
+      id: editingApplianceId || Date.now(),
       nameHi: newVaultName.trim(),
       nameEn: newVaultName.trim(),
-      price: newVaultPrice ? `₹${newVaultPrice}` : '₹0',
-      warrantyEnd: newVaultWarranty || '1 Year',
-      storeHi: newVaultStore || 'दुकान',
-      storeEn: newVaultStore || 'Local Store',
-      bought: lang === 'hi' ? 'आज' : 'Today',
-      billNo: `INV/${Math.floor(1000 + Math.random() * 9000)}`,
+      price: newVaultPrice ? `₹${newVaultPrice}` : (existing?.price || '₹0'),
+      warrantyEnd: newVaultWarranty || (existing?.warrantyEnd || '1 Year'),
+      storeHi: newVaultStore || (existing?.storeHi || 'दुकान'),
+      storeEn: newVaultStore || (existing?.storeEn || 'Local Store'),
+      bought: existing?.bought || (lang === 'hi' ? 'आज' : 'Today'),
+      billNo: existing?.billNo || `INV/${Math.floor(1000 + Math.random() * 9000)}`,
       alert: false,
       imageUri: newVaultPhoto
     };
-    await saveAppliances([...appliances, newApp]);
+    const updated = editingApplianceId ? appliances.map(a => a.id === editingApplianceId ? savedApp : a) : [...appliances, savedApp];
+    await saveAppliances(updated);
     setNewVaultName('');
     setNewVaultPrice('');
     setNewVaultWarranty('');
     setNewVaultStore('');
     setNewVaultPhoto(null);
+    setEditingApplianceId(null);
     setIsAddApplianceModalOpen(false);
-    Alert.alert(lang === 'hi' ? 'सफल' : 'Success', lang === 'hi' ? 'नया सामान व बिल लॉकर में सेव हो गया!' : 'Item and bill saved to vault!');
+    Alert.alert(lang === 'hi' ? 'सफल' : 'Success', editingApplianceId ? (lang === 'hi' ? 'उपकरण विवरण अपडेट हो गया!' : 'Appliance updated!') : (lang === 'hi' ? 'नया सामान व बिल लॉकर में सेव हो गया!' : 'Item saved to vault!'));
   };
 
   const handleAddNewGold = async () => {
@@ -3424,30 +3587,33 @@ export default function App() {
       Alert.alert('Notice', lang === 'hi' ? 'आभूषण का नाम लिखें' : 'Please enter jewellery name');
       return;
     }
-    const newG = {
-      id: Date.now(),
+    const existing = goldItems.find(g => g.id === editingGoldId);
+    const savedG = {
+      id: editingGoldId || Date.now(),
       titleHi: newGoldTitle.trim(),
       titleEn: newGoldTitle.trim(),
-      weight: newGoldWeight ? `${newGoldWeight} gm` : '10 gm',
+      weight: newGoldWeight ? `${newGoldWeight} gm` : (existing?.weight || '10 gm'),
       purityHi: newGoldPurity,
       purityEn: newGoldPurity,
-      value: newGoldValue ? `₹${newGoldValue}` : '₹80,000',
+      value: newGoldValue ? `₹${newGoldValue}` : (existing?.value || '₹80,000'),
       lockerHi: newGoldLocker,
       lockerEn: newGoldLocker,
-      jewellerHi: newGoldJeweller || 'ज्वेलर',
-      jewellerEn: newGoldJeweller || 'Jeweller',
-      purchaseDate: newGoldDate,
+      jewellerHi: newGoldJeweller || (existing?.jewellerHi || 'ज्वेलर'),
+      jewellerEn: newGoldJeweller || (existing?.jewellerEn || 'Jeweller'),
+      purchaseDate: newGoldDate || existing?.purchaseDate,
       imageUri: newGoldPhoto
     };
-    await saveGold([...goldItems, newG]);
+    const updated = editingGoldId ? goldItems.map(g => g.id === editingGoldId ? savedG : g) : [...goldItems, savedG];
+    await saveGold(updated);
     setNewGoldTitle('');
     setNewGoldWeight('');
     setNewGoldValue('');
     setNewGoldJeweller('');
     setNewGoldDate('');
     setNewGoldPhoto(null);
+    setEditingGoldId(null);
     setIsAddGoldModalOpen(false);
-    Alert.alert(lang === 'hi' ? 'सफल' : 'Success', lang === 'hi' ? 'स्वर्ण संचय में नया आभूषण सेव हो गया!' : 'Jewellery added to vault!');
+    Alert.alert(lang === 'hi' ? 'सफल' : 'Success', editingGoldId ? (lang === 'hi' ? 'आभूषण जानकारी अपडेट हो गई!' : 'Jewellery updated!') : (lang === 'hi' ? 'स्वर्ण संचय में नया आभूषण सेव हो गया!' : 'Jewellery added!'));
   };
 
   const handleAddNewDoc = async () => {
@@ -3457,25 +3623,27 @@ export default function App() {
     }
     const memberLabelHi = newDocMember === 'babu' ? 'बाबूजी' : newDocMember === 'amma' ? 'अम्मा' : newDocMember === 'self' ? 'स्वयं' : 'बच्चे';
     const memberLabelEn = newDocMember === 'babu' ? 'Father' : newDocMember === 'amma' ? 'Mother' : newDocMember === 'self' ? 'Self' : 'Kids';
-
-    const newD = {
-      id: Date.now(),
+    const existing = familyDocs.find(d => d.id === editingDocId);
+    const savedD = {
+      id: editingDocId || Date.now(),
       member: newDocMember,
       memberHi: memberLabelHi,
       memberEn: memberLabelEn,
       titleHi: newDocTitle.trim(),
       titleEn: newDocTitle.trim(),
-      docNo: newDocNumber || 'DOC-XXXX-001',
-      expiry: newDocExpiry,
+      docNo: newDocNumber || (existing?.docNo || 'DOC-XXXX-001'),
+      expiry: newDocExpiry || existing?.expiry,
       imageUri: newDocPhoto
     };
-    await saveDocs([...familyDocs, newD]);
+    const updated = editingDocId ? familyDocs.map(d => d.id === editingDocId ? savedD : d) : [...familyDocs, savedD];
+    await saveDocs(updated);
     setNewDocTitle('');
     setNewDocNumber('');
     setNewDocExpiry('');
     setNewDocPhoto(null);
+    setEditingDocId(null);
     setIsAddDocModalOpen(false);
-    Alert.alert(lang === 'hi' ? 'सफल' : 'Success', lang === 'hi' ? 'दस्तावेज़ लॉकर में सुरक्षित हो गया!' : 'Document saved to vault!');
+    Alert.alert(lang === 'hi' ? 'सफल' : 'Success', editingDocId ? (lang === 'hi' ? 'दस्तावेज़ विवरण अपडेट हो गया!' : 'Document updated!') : (lang === 'hi' ? 'दस्तावेज़ लॉकर में सुरक्षित हो गया!' : 'Document saved to vault!'));
   };
 
   const handleAddNewReminder = async () => {
@@ -3483,21 +3651,24 @@ export default function App() {
       Alert.alert('Notice', lang === 'hi' ? 'रिमाइंडर का नाम लिखें' : 'Please enter title');
       return;
     }
-    const newRem = {
-      id: Date.now(),
+    const existing = upcomingReminders.find(r => r.id === editingReminderId);
+    const savedRem = {
+      id: editingReminderId || Date.now(),
       category: newRemCategory,
       titleHi: newRemTitle.trim(),
       titleEn: newRemTitle.trim(),
-      amount: newRemAmount ? `₹${newRemAmount}` : '',
-      date: newRemDate || '05 Nov',
+      amount: newRemAmount ? `₹${newRemAmount}` : (existing?.amount || ''),
+      date: newRemDate || (existing?.date || '05 Nov'),
       urgent: newRemUrgent,
-      paid: false
+      paid: existing ? existing.paid : false
     };
-    await saveReminders([...upcomingReminders, newRem]);
+    const updated = editingReminderId ? upcomingReminders.map(r => r.id === editingReminderId ? savedRem : r) : [...upcomingReminders, savedRem];
+    await saveReminders(updated);
     setNewRemTitle('');
     setNewRemAmount('');
+    setEditingReminderId(null);
     setIsAddReminderModalOpen(false);
-    Alert.alert(lang === 'hi' ? 'सफल' : 'Success', lang === 'hi' ? 'नया रिमाइंडर सेट हो गया!' : 'Reminder saved!');
+    Alert.alert(lang === 'hi' ? 'सफल' : 'Success', editingReminderId ? (lang === 'hi' ? 'रिमाइंडर अपडेट हो गया!' : 'Reminder updated!') : (lang === 'hi' ? 'नया रिमाइंडर सेट हो गया!' : 'Reminder saved!'));
   };
 
   const handleAddNewExpense = async () => {
@@ -3527,24 +3698,27 @@ export default function App() {
       Alert.alert('Notice', lang === 'hi' ? 'सदस्य का नाम लिखें' : 'Please enter member name');
       return;
     }
-    const newM = {
-      id: Date.now(),
+    const existing = familyMembers.find(m => m.id === editingMemberId);
+    const savedM = {
+      id: editingMemberId || Date.now(),
       name: newMemberName.trim(),
-      relationHi: newMemberRelation,
-      relationEn: newMemberRelation,
-      phone: newMemberPhone || '98XXXXXXXX',
-      age: newMemberAge || '25',
-      dob: newMemberDob,
+      relationHi: newMemberRelation || existing?.relationHi || 'सदस्य',
+      relationEn: newMemberRelation || existing?.relationEn || 'Member',
+      phone: newMemberPhone || existing?.phone || '98XXXXXXXX',
+      age: newMemberAge || existing?.age || '25',
+      dob: newMemberDob || existing?.dob,
       avatar: newMemberAvatar,
-      role: 'Family Member'
+      role: existing?.role || 'Family Member'
     };
-    await saveMembers([...familyMembers, newM]);
+    const updated = editingMemberId ? familyMembers.map(m => m.id === editingMemberId ? savedM : m) : [...familyMembers, savedM];
+    await saveMembers(updated);
     setNewMemberName('');
     setNewMemberPhone('');
     setNewMemberAge('');
     setNewMemberDob('');
+    setEditingMemberId(null);
     setIsAddMemberModalOpen(false);
-    Alert.alert(lang === 'hi' ? 'सफल' : 'Success', lang === 'hi' ? 'परिवार में नया सदस्य जुड़ गया!' : 'Family member added!');
+    Alert.alert(lang === 'hi' ? 'सफल' : 'Success', editingMemberId ? (lang === 'hi' ? 'सदस्य की जानकारी अपडेट हो गई!' : 'Member updated!') : (lang === 'hi' ? 'परिवार में नया सदस्य जुड़ गया!' : 'Family member added!'));
   };
 
   const handleAddNewDiary = async () => {
@@ -3552,17 +3726,20 @@ export default function App() {
       Alert.alert('Notice', lang === 'hi' ? 'शीर्षक व विचार लिखें' : 'Please enter title and content');
       return;
     }
-    const newEntry = {
-      id: Date.now(),
+    const existing = diaryEntries.find(d => d.id === editingDiaryId);
+    const savedEntry = {
+      id: editingDiaryId || Date.now(),
       titleHi: newDiaryTitle.trim(),
       titleEn: newDiaryTitle.trim(),
       contentHi: newDiaryContent.trim(),
       contentEn: newDiaryContent.trim(),
       type: newDiaryType,
-      date: newDiaryDate || (lang === 'hi' ? 'आज' : 'Today')
+      date: newDiaryDate || (existing?.date || (lang === 'hi' ? 'आज' : 'Today'))
     };
-    await saveDiary([newEntry, ...diaryEntries]);
+    const updated = editingDiaryId ? diaryEntries.map(d => d.id === editingDiaryId ? savedEntry : d) : [savedEntry, ...diaryEntries];
+    await saveDiary(updated);
     setNewDiaryDate('आज');
+    setEditingDiaryId(null);
     setNewDiaryTitle('');
     setNewDiaryContent('');
     setIsAddDiaryModalOpen(false);
@@ -3830,7 +4007,7 @@ export default function App() {
             <View>
               <View style={styles.sectionHeaderRow}>
                 <Text style={styles.sectionTitle}>🔔 {t.todayAgenda}</Text>
-                <TouchableOpacity style={styles.addSmallBtn} onPress={() => setIsAddMedModalOpen(true)}>
+                <TouchableOpacity style={styles.addSmallBtn} onPress={openAddMedModal}>
                   <Text style={styles.addSmallBtnText}>{t.addMedBtn}</Text>
                 </TouchableOpacity>
               </View>
@@ -3884,9 +4061,12 @@ export default function App() {
                         <Text style={styles.rxSlipBtnText}>{t.rxSlip}</Text>
                       </TouchableOpacity>
 
-                      {/* Delete Medicine Button */}
+                      {/* Edit & Delete Medicine */}
+                      <TouchableOpacity onPress={() => openEditMedModal(med)} style={{ padding: 4, marginLeft: 4 }}>
+                        <Text style={{ fontSize: 15 }}>✏️</Text>
+                      </TouchableOpacity>
                       <TouchableOpacity onPress={() => deleteMedicine(med.id)} style={{ padding: 4, marginLeft: 4 }}>
-                        <Text style={{ fontSize: 16 }}>🗑️</Text>
+                        <Text style={{ fontSize: 15 }}>🗑️</Text>
                       </TouchableOpacity>
                     </View>
                   );
@@ -4151,15 +4331,18 @@ export default function App() {
                         <Text style={styles.cardTitle}>{appName}</Text>
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                           <Text style={styles.priceBadge}>{app.price}</Text>
+                          <TouchableOpacity onPress={() => openEditApplianceModal(app)} style={{ padding: 4 }}>
+                            <Text style={{ fontSize: 15 }}>✏️</Text>
+                          </TouchableOpacity>
                           <TouchableOpacity onPress={() => deleteAppliance(app.id)} style={{ padding: 4 }}>
-                            <Text style={{ fontSize: 16 }}>🗑️</Text>
+                            <Text style={{ fontSize: 15 }}>🗑️</Text>
                           </TouchableOpacity>
                         </View>
                       </View>
                       <Text style={styles.cardSub}>{t.boughtLabel}: {app.bought} • {t.storeLabel}: {storeName}</Text>
                       
                       {app.imageUri && (
-                        <Image source={{ uri: app.imageUri }} style={{ width: '100%', height: 160, borderRadius: 12, marginTop: 10 }} />
+                        <TouchableOpacity onPress={() => setSelectedFullPhoto(app.imageUri)}><Image source={{ uri: app.imageUri }} style={{ width: '100%', height: 160, borderRadius: 12, marginTop: 10 }} /><Text style={{ fontSize: 11, color: '#64748b', textAlign: 'center', marginTop: 4 }}>🔍 {lang === 'hi' ? 'बड़ा देखने के लिए फ़ोटो छुएं' : 'Tap to zoom'}</Text></TouchableOpacity>
                       )}
 
                       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }}>
@@ -4227,8 +4410,11 @@ export default function App() {
                         <Text style={styles.cardTitle}>{title}</Text>
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                           <Text style={styles.priceBadge}>{item.value}</Text>
+                          <TouchableOpacity onPress={() => openEditGoldModal(item)} style={{ padding: 4 }}>
+                            <Text style={{ fontSize: 15 }}>✏️</Text>
+                          </TouchableOpacity>
                           <TouchableOpacity onPress={() => deleteGold(item.id)} style={{ padding: 4 }}>
-                            <Text style={{ fontSize: 16 }}>🗑️</Text>
+                            <Text style={{ fontSize: 15 }}>🗑️</Text>
                           </TouchableOpacity>
                         </View>
                       </View>
@@ -4238,7 +4424,7 @@ export default function App() {
                       </Text>
 
                       {item.imageUri && (
-                        <Image source={{ uri: item.imageUri }} style={{ width: '100%', height: 160, borderRadius: 12, marginTop: 10 }} />
+                        <TouchableOpacity onPress={() => setSelectedFullPhoto(item.imageUri)}><Image source={{ uri: item.imageUri }} style={{ width: '100%', height: 160, borderRadius: 12, marginTop: 10 }} /><Text style={{ fontSize: 11, color: '#64748b', textAlign: 'center', marginTop: 4 }}>🔍 {lang === 'hi' ? 'बड़ा देखने के लिए फ़ोटो छुएं' : 'Tap to zoom'}</Text></TouchableOpacity>
                       )}
 
                       <TouchableOpacity 
@@ -4317,15 +4503,18 @@ export default function App() {
                           <Text style={styles.cardTitle}>{title}</Text>
                           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                             <View style={styles.verifiedBadge}><Text style={styles.verifiedBadgeText}>{t.verifiedTag}</Text></View>
+                            <TouchableOpacity onPress={() => openEditDocModal(doc)} style={{ padding: 4 }}>
+                              <Text style={{ fontSize: 15 }}>✏️</Text>
+                            </TouchableOpacity>
                             <TouchableOpacity onPress={() => deleteDoc(doc.id)} style={{ padding: 4 }}>
-                              <Text style={{ fontSize: 16 }}>🗑️</Text>
+                              <Text style={{ fontSize: 15 }}>🗑️</Text>
                             </TouchableOpacity>
                           </View>
                         </View>
                         <Text style={styles.cardSub}>{t.memberLabel}: {member} • {doc.docNo}</Text>
                         
                         {doc.imageUri && (
-                          <Image source={{ uri: doc.imageUri }} style={{ width: '100%', height: 160, borderRadius: 12, marginTop: 10 }} />
+                          <TouchableOpacity onPress={() => setSelectedFullPhoto(doc.imageUri)}><Image source={{ uri: doc.imageUri }} style={{ width: '100%', height: 160, borderRadius: 12, marginTop: 10 }} /><Text style={{ fontSize: 11, color: '#64748b', textAlign: 'center', marginTop: 4 }}>🔍 {lang === 'hi' ? 'बड़ा देखने के लिए फ़ोटो छुएं' : 'Tap to zoom'}</Text></TouchableOpacity>
                         )}
 
                         <TouchableOpacity 
@@ -4371,7 +4560,7 @@ export default function App() {
             <View style={styles.card}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                 <Text style={styles.sectionHeading}>💊 {t.todayAgenda}</Text>
-                <TouchableOpacity style={styles.addSmallBtn} onPress={() => setIsAddMedModalOpen(true)}>
+                <TouchableOpacity style={styles.addSmallBtn} onPress={openAddMedModal}>
                   <Text style={styles.addSmallBtnText}>{t.addMedBtn}</Text>
                 </TouchableOpacity>
               </View>
@@ -4464,8 +4653,11 @@ export default function App() {
                         <Text style={[styles.priceBadge, isPaid && styles.strike, { color: rem.urgent && !isPaid ? '#e11d48' : '#0f172a' }]}>
                           {rem.amount}
                         </Text>
+                        <TouchableOpacity onPress={() => openEditReminderModal(rem)} style={{ padding: 4 }}>
+                          <Text style={{ fontSize: 15 }}>✏️</Text>
+                        </TouchableOpacity>
                         <TouchableOpacity onPress={() => deleteReminder(rem.id)} style={{ padding: 4 }}>
-                          <Text style={{ fontSize: 16 }}>🗑️</Text>
+                          <Text style={{ fontSize: 15 }}>🗑️</Text>
                         </TouchableOpacity>
                       </View>
                     </View>
@@ -5083,6 +5275,23 @@ export default function App() {
               </TouchableOpacity>
             </View>
 
+            {/* Diary Search Bar */}
+            <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#f1f5f9', borderRadius: 12, paddingHorizontal: 12, borderWidth: 1, borderColor: '#e2e8f0' }}>
+              <Text style={{ fontSize: 16, marginRight: 6 }}>🔍</Text>
+              <TextInput
+                style={{ flex: 1, height: 40, fontSize: 13, color: '#0f172a' }}
+                placeholder={lang === 'hi' ? 'डायरी में खोजें (शीर्षक या शब्द)...' : 'Search diary entries...'}
+                placeholderTextColor="#94a3b8"
+                value={diarySearchQuery}
+                onChangeText={setDiarySearchQuery}
+              />
+              {diarySearchQuery ? (
+                <TouchableOpacity onPress={() => setDiarySearchQuery('')} style={{ padding: 4 }}>
+                  <Text style={{ fontSize: 16, color: '#64748b' }}>✕</Text>
+                </TouchableOpacity>
+              ) : null}
+            </View>
+
             {/* Diary Filter Chips */}
             <View style={{ flexDirection: 'row', gap: 8 }}>
               {[
@@ -5100,47 +5309,57 @@ export default function App() {
               ))}
             </View>
 
-            {diaryEntries.filter(entry => diaryFilter === 'all' || entry.type === diaryFilter).length === 0 ? (
-              <View style={[styles.card, { alignItems: 'center', paddingVertical: 32 }]}>
-                <Text style={{ fontSize: 40, marginBottom: 8 }}>📖</Text>
-                <Text style={{ fontSize: 15, fontWeight: '700', color: '#1e293b' }}>
-                  {lang === 'hi' ? 'डायरी में कोई प्रविष्टि नहीं है' : 'No entries in diary'}
-                </Text>
-                <Text style={{ fontSize: 12, color: '#64748b', textAlign: 'center', marginTop: 4, marginHorizontal: 20 }}>
-                  {lang === 'hi' ? 'अपनी प्रिय कविता, विचार या संस्मरण यहाँ सहेजें और परिवार से साझा करें' : 'Save personal poems, thoughts or memoirs and share with family'}
-                </Text>
-                <TouchableOpacity 
-                  style={[styles.addSmallBtn, { marginTop: 16, paddingHorizontal: 16, paddingVertical: 8 }]} 
-                  onPress={() => setIsAddDiaryModalOpen(true)}
-                >
-                  <Text style={styles.addSmallBtnText}>+ {t.addDiaryBtn}</Text>
-                </TouchableOpacity>
-              </View>
-            ) : (
-              diaryEntries
-                .filter(entry => diaryFilter === 'all' || entry.type === diaryFilter)
-                .map(entry => {
-                const title = getLocalized(entry, 'title');
-                const content = getLocalized(entry, 'content');
+            {(() => {
+              const q = diarySearchQuery.toLowerCase().trim();
+              const filteredDiary = diaryEntries.filter(entry => {
+                const matchesType = diaryFilter === 'all' || entry.type === diaryFilter;
+                const title = (entry.titleHi || entry.titleEn || '').toLowerCase();
+                const text = (entry.contentHi || entry.contentEn || '').toLowerCase();
+                const matchesQuery = !q || title.includes(q) || text.includes(q);
+                return matchesType && matchesQuery;
+              });
+              if (filteredDiary.length === 0) {
                 return (
-                  <View key={entry.id} style={styles.diaryCard}>
-                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <Text style={styles.diaryTitle}>{title}</Text>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                        <Text style={styles.diaryDate}>{entry.date}</Text>
-                        <TouchableOpacity onPress={() => deleteDiary(entry.id)} style={{ padding: 4 }}>
-                          <Text style={{ fontSize: 16 }}>🗑️</Text>
-                        </TouchableOpacity>
-                      </View>
-                    </View>
-                    <Text style={styles.diaryContent}>{content}</Text>
-                    <TouchableOpacity style={styles.waShareBtn} onPress={() => shareViaWhatsApp(entry)}>
-                      <Text style={styles.waShareBtnText}>{t.shareWA}</Text>
-                    </TouchableOpacity>
+                  <View style={[styles.card, { alignItems: 'center', paddingVertical: 32 }]}>
+                    <Text style={{ fontSize: 40, marginBottom: 8 }}>📖</Text>
+                    <Text style={{ fontSize: 15, fontWeight: '700', color: '#1e293b' }}>
+                      {diarySearchQuery ? (lang === 'hi' ? 'कोई मेल खाती रचना नहीं मिली' : 'No matching entries found') : (lang === 'hi' ? 'डायरी में कोई प्रविष्टि नहीं है' : 'No entries in diary')}
+                    </Text>
+                    <Text style={{ fontSize: 12, color: '#64748b', marginTop: 4, textAlign: 'center' }}>
+                      {diarySearchQuery ? (lang === 'hi' ? 'दूसरा शब्द खोजें या फ़िल्टर बदलें' : 'Try searching another word') : (lang === 'hi' ? 'ऊपर "+ विचार लिखें" बटन दबाकर अपने विचार लिखें' : 'Tap "+ Write Note" above')}
+                    </Text>
                   </View>
                 );
-              })
-            )}
+              }
+              return (
+                <View style={{ gap: 12 }}>
+                  {filteredDiary.map(entry => {
+                    const title = getLocalized(entry, 'title');
+                    const content = getLocalized(entry, 'content');
+                    return (
+                      <View key={entry.id} style={styles.card}>
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <Text style={styles.diaryTitle}>{title}</Text>
+                          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+                            <Text style={styles.diaryDate}>{entry.date}</Text>
+                            <TouchableOpacity onPress={() => openEditDiaryModal(entry)} style={{ padding: 4 }}>
+                              <Text style={{ fontSize: 15 }}>✏️</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity onPress={() => deleteDiary(entry.id)} style={{ padding: 4 }}>
+                              <Text style={{ fontSize: 15 }}>🗑️</Text>
+                            </TouchableOpacity>
+                          </View>
+                        </View>
+                        <Text style={styles.diaryContent}>{content}</Text>
+                        <TouchableOpacity style={styles.waShareBtn} onPress={() => shareViaWhatsApp(entry)}>
+                          <Text style={styles.waShareBtnText}>{t.shareWA}</Text>
+                        </TouchableOpacity>
+                      </View>
+                    );
+                  })}
+                </View>
+              );
+            })()}
           </View>
         </ScrollView>
 
@@ -5274,6 +5493,9 @@ export default function App() {
                         onPress={() => Linking.openURL(`whatsapp://send?phone=${mem.phone}`)}
                       >
                         <Text style={{ fontSize: 16 }}>💬</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity onPress={() => openEditMemberModal(mem)} style={{ padding: 4 }}>
+                        <Text style={{ fontSize: 15 }}>✏️</Text>
                       </TouchableOpacity>
                       <TouchableOpacity onPress={() => deleteMember(mem.id)} style={{ padding: 4 }}>
                         <Text style={{ fontSize: 15 }}>🗑️</Text>
@@ -5412,7 +5634,7 @@ export default function App() {
         <View style={styles.modalBackdrop}>
           <View style={styles.modalContent}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Text style={styles.modalHeaderTitle}>{t.addMedTitle}</Text>
+              <Text style={styles.modalHeaderTitle}>{editingMedId ? (lang === 'hi' ? '✏️ दवाई की जानकारी संपादित करें' : '✏️ Edit Medicine Details') : t.addMedTitle}</Text>
               <TouchableOpacity onPress={() => setIsAddMedModalOpen(false)}>
                 <Text style={{ fontSize: 22, color: '#64748b', fontWeight: 'bold' }}>✕</Text>
               </TouchableOpacity>
@@ -5517,7 +5739,7 @@ export default function App() {
             </View>
 
             <TouchableOpacity style={styles.saveSubmitBtn} onPress={handleAddNewMedicine}>
-              <Text style={styles.saveSubmitBtnText}>{t.saveMedBtn}</Text>
+              <Text style={styles.saveSubmitBtnText}>{editingMedId ? (lang === 'hi' ? '✓ बदलाव सुरक्षित करें' : '✓ Update Medicine') : t.saveMedBtn}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -5528,7 +5750,7 @@ export default function App() {
         <View style={styles.modalBackdrop}>
           <View style={styles.modalContent}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Text style={styles.modalHeaderTitle}>{t.addVaultTitle}</Text>
+              <Text style={styles.modalHeaderTitle}>{editingApplianceId ? (lang === 'hi' ? '✏️ सामान व बिल संपादित करें' : '✏️ Edit Appliance & Bill') : t.addVaultTitle}</Text>
               <TouchableOpacity onPress={() => setIsAddApplianceModalOpen(false)}>
                 <Text style={{ fontSize: 22, color: '#64748b', fontWeight: 'bold' }}>✕</Text>
               </TouchableOpacity>
@@ -5621,7 +5843,7 @@ export default function App() {
             </View>
 
             <TouchableOpacity style={styles.saveSubmitBtn} onPress={handleAddNewAppliance}>
-              <Text style={styles.saveSubmitBtnText}>{t.saveToVaultBtn}</Text>
+              <Text style={styles.saveSubmitBtnText}>{editingApplianceId ? (lang === 'hi' ? '✓ बदलाव सुरक्षित करें' : '✓ Update Appliance') : t.saveToVaultBtn}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -5632,7 +5854,7 @@ export default function App() {
         <View style={styles.modalBackdrop}>
           <View style={styles.modalContent}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Text style={styles.modalHeaderTitle}>{t.addGoldTitle}</Text>
+              <Text style={styles.modalHeaderTitle}>{editingGoldId ? (lang === 'hi' ? '✏️ आभूषण विवरण संपादित करें' : '✏️ Edit Jewellery Details') : t.addGoldTitle}</Text>
               <TouchableOpacity onPress={() => setIsAddGoldModalOpen(false)}>
                 <Text style={{ fontSize: 22, color: '#64748b', fontWeight: 'bold' }}>✕</Text>
               </TouchableOpacity>
@@ -5737,7 +5959,7 @@ export default function App() {
             </View>
 
             <TouchableOpacity style={styles.saveSubmitBtn} onPress={handleAddNewGold}>
-              <Text style={styles.saveSubmitBtnText}>{t.saveGoldBtn}</Text>
+              <Text style={styles.saveSubmitBtnText}>{editingGoldId ? (lang === 'hi' ? '✓ बदलाव सुरक्षित करें' : '✓ Update Jewellery') : t.saveGoldBtn}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -5748,7 +5970,7 @@ export default function App() {
         <View style={styles.modalBackdrop}>
           <View style={styles.modalContent}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Text style={styles.modalHeaderTitle}>{t.addDocTitle}</Text>
+              <Text style={styles.modalHeaderTitle}>{editingDocId ? (lang === 'hi' ? '✏️ दस्तावेज़ संपादित करें' : '✏️ Edit Document Details') : t.addDocTitle}</Text>
               <TouchableOpacity onPress={() => setIsAddDocModalOpen(false)}>
                 <Text style={{ fontSize: 22, color: '#64748b', fontWeight: 'bold' }}>✕</Text>
               </TouchableOpacity>
@@ -5831,7 +6053,7 @@ export default function App() {
             </View>
 
             <TouchableOpacity style={styles.saveSubmitBtn} onPress={handleAddNewDoc}>
-              <Text style={styles.saveSubmitBtnText}>{t.saveDocBtn}</Text>
+              <Text style={styles.saveSubmitBtnText}>{editingDocId ? (lang === 'hi' ? '✓ बदलाव सुरक्षित करें' : '✓ Update Document') : t.saveDocBtn}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -5842,7 +6064,7 @@ export default function App() {
         <View style={styles.modalBackdrop}>
           <View style={styles.modalContent}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Text style={styles.modalHeaderTitle}>{t.addReminderTitle}</Text>
+              <Text style={styles.modalHeaderTitle}>{editingReminderId ? (lang === 'hi' ? '✏️ रिमाइंडर संपादित करें' : '✏️ Edit Reminder Details') : t.addReminderTitle}</Text>
               <TouchableOpacity onPress={() => setIsAddReminderModalOpen(false)}>
                 <Text style={{ fontSize: 22, color: '#64748b', fontWeight: 'bold' }}>✕</Text>
               </TouchableOpacity>
@@ -5902,7 +6124,7 @@ export default function App() {
             </View>
 
             <TouchableOpacity style={styles.saveSubmitBtn} onPress={handleAddNewReminder}>
-              <Text style={styles.saveSubmitBtnText}>{t.saveReminderBtn}</Text>
+              <Text style={styles.saveSubmitBtnText}>{editingReminderId ? (lang === 'hi' ? '✓ बदलाव सुरक्षित करें' : '✓ Update Reminder') : t.saveReminderBtn}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -5992,7 +6214,7 @@ export default function App() {
         <View style={styles.modalBackdrop}>
           <View style={styles.modalContent}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Text style={styles.modalHeaderTitle}>{t.addMemberTitle}</Text>
+              <Text style={styles.modalHeaderTitle}>{editingMemberId ? (lang === 'hi' ? '✏️ सदस्य की जानकारी संपादित करें' : '✏️ Edit Family Member') : t.addMemberTitle}</Text>
               <TouchableOpacity onPress={() => setIsAddMemberModalOpen(false)}>
                 <Text style={{ fontSize: 22, color: '#64748b', fontWeight: 'bold' }}>✕</Text>
               </TouchableOpacity>
@@ -6070,7 +6292,7 @@ export default function App() {
             </View>
 
             <TouchableOpacity style={styles.saveSubmitBtn} onPress={handleAddNewMember}>
-              <Text style={styles.saveSubmitBtnText}>{t.saveMemberBtn}</Text>
+              <Text style={styles.saveSubmitBtnText}>{editingMemberId ? (lang === 'hi' ? '✓ बदलाव सुरक्षित करें' : '✓ Update Member') : t.saveMemberBtn}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -6081,7 +6303,7 @@ export default function App() {
         <View style={styles.modalBackdrop}>
           <View style={styles.modalContent}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Text style={styles.modalHeaderTitle}>{t.addDiaryTitle}</Text>
+              <Text style={styles.modalHeaderTitle}>{editingDiaryId ? (lang === 'hi' ? '✏️ रचना संपादित करें' : '✏️ Edit Diary Entry') : t.addDiaryTitle}</Text>
               <TouchableOpacity onPress={() => setIsAddDiaryModalOpen(false)}>
                 <Text style={{ fontSize: 22, color: '#64748b', fontWeight: 'bold' }}>✕</Text>
               </TouchableOpacity>
@@ -6143,7 +6365,7 @@ export default function App() {
             </View>
 
             <TouchableOpacity style={styles.saveSubmitBtn} onPress={handleAddNewDiary}>
-              <Text style={styles.saveSubmitBtnText}>{t.saveToDiaryBtn}</Text>
+              <Text style={styles.saveSubmitBtnText}>{editingDiaryId ? (lang === 'hi' ? '✓ बदलाव सुरक्षित करें' : '✓ Update Entry') : t.saveToDiaryBtn}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -6697,6 +6919,24 @@ export default function App() {
             </TouchableOpacity>
           </View>
         </View>
+      </Modal>
+
+            {/* ================= MODAL: FULL-SCREEN PHOTO VIEWER ================= */}
+      <Modal visible={!!selectedFullPhoto} transparent animationType="fade" onRequestClose={() => setSelectedFullPhoto(null)}>
+        <SafeAreaView style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.95)', justifyContent: 'center', alignItems: 'center', padding: 16 }}>
+          <TouchableOpacity 
+            style={{ position: 'absolute', top: 40, right: 20, zIndex: 10, backgroundColor: 'rgba(255,255,255,0.2)', paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20 }}
+            onPress={() => setSelectedFullPhoto(null)}
+          >
+            <Text style={{ color: '#fff', fontSize: 16, fontWeight: 'bold' }}>✕ {lang === 'hi' ? 'बंद करें' : 'Close'}</Text>
+          </TouchableOpacity>
+          {selectedFullPhoto && (
+            <Image 
+              source={{ uri: selectedFullPhoto }} 
+              style={{ width: '100%', height: '80%', resizeMode: 'contain', borderRadius: 12 }} 
+            />
+          )}
+        </SafeAreaView>
       </Modal>
 
       {/* ================= UNIVERSAL HIGH-PRIORITY CALENDAR MODAL ================= */}
