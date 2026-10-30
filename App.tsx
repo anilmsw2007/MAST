@@ -1273,8 +1273,8 @@ export default function App() {
   const [diaryFilter, setDiaryFilter] = useState<'all' | 'kavita' | 'vichar'>('all');
 
   // Multi-Child & Multi-School State
-  const [schoolChildren, setSchoolChildren] = useState<any[]>([]);
-  const [activeChildId, setActiveChildId] = useState<string>('');
+  const [schoolChildren, setSchoolChildren] = useState<any[]>(DEFAULT_SCHOOL_CHILDREN);
+  const [activeChildId, setActiveChildId] = useState<string>('child_riya');
 
   // Driver Profile & Simple State-District Hierarchy State
   const [driverNameInput, setDriverNameInput] = useState('');
@@ -1359,9 +1359,11 @@ export default function App() {
 
   // Active child helper
   const activeChild = schoolChildren.find(c => c.id === activeChildId) || schoolChildren[0] || null;
-  const busETA = activeChild ? activeChild.etaMins : 0;
-  const busStopIdx = 2;
-  const isTripActive = driverDutyActive || isBusSimulating;
+  const [busETA, setBusETA] = useState<number>(8);
+  const [busStopIdx, setBusStopIdx] = useState<number>(2);
+  const [cloudTripActive, setCloudTripActive] = useState<boolean>(false);
+  const isTripActive = driverDutyActive || isBusSimulating || cloudTripActive;
+  const setIsTripActive = (active: boolean) => setCloudTripActive(active);
 
   // Translation Helper
   const tr = (str: any, targetLang?: 'hi' | 'en'): string => {
@@ -1662,7 +1664,11 @@ export default function App() {
         if (storedChat) setFamilyChat(JSON.parse(storedChat));
 
         const storedChildren = await AsyncStorage.getItem('@mast_v7_school_children');
-        if (storedChildren) setSchoolChildren(JSON.parse(storedChildren));
+        if (storedChildren && JSON.parse(storedChildren).length > 0) {
+          setSchoolChildren(JSON.parse(storedChildren));
+        } else {
+          setSchoolChildren(DEFAULT_SCHOOL_CHILDREN);
+        }
 
         const storedParentState = await AsyncStorage.getItem('@mast_v7_parent_state');
         if (storedParentState) setParentState(storedParentState);
@@ -3041,6 +3047,12 @@ export default function App() {
         step = (step + 1) % etas.length;
         setBusETA(etas[step]);
         setBusStopIdx(stops[step]);
+        setSchoolChildren(prev => prev.map(ch => {
+          if (ch.id === (activeChild?.id || 'child_riya')) {
+            return { ...ch, etaMins: etas[step] };
+          }
+          return ch;
+        }));
 
         // Broadcast to family cloud channel
         publishCloudEvent({
@@ -4831,28 +4843,114 @@ export default function App() {
                   </View>
                 </View>
 
+                {/* Driver Duty / Trip Status Banner */}
+                {!isTripActive ? (
+                  <View style={{
+                    backgroundColor: '#fef2f2',
+                    borderWidth: 1.5,
+                    borderColor: '#fca5a5',
+                    borderRadius: 16,
+                    padding: 12,
+                    marginBottom: 10,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: 12
+                  }}>
+                    <Text style={{ fontSize: 26 }}>🔴</Text>
+                    <View style={{ flex: 1 }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                        <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#b91c1c' }}>
+                          {lang === 'hi' ? 'चालक अभी ड्यूटी पर नहीं हैं / बस स्कूल में खड़ी है' : 'Driver Off Duty / Bus Parked at School'}
+                        </Text>
+                        <View style={{ backgroundColor: '#fee2e2', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 }}>
+                          <Text style={{ fontSize: 10, fontWeight: 'bold', color: '#dc2626' }}>
+                            {lang === 'hi' ? 'ऑफलाइन' : 'OFFLINE'}
+                          </Text>
+                        </View>
+                      </View>
+                      <Text style={{ fontSize: 12, color: '#991b1b', marginTop: 3, lineHeight: 16 }}>
+                        {lang === 'hi'
+                          ? 'जब चालक ड्यूटी शुरू करेंगे (START TRIP), वास्तविक दूरी (Km) व लाइव GPS मूवमेंट सक्रिय हो जाएगा।'
+                          : 'Live GPS tracking and real-time distance (Km) will activate once the driver starts duty trip.'}
+                      </Text>
+                    </View>
+                  </View>
+                ) : (
+                  <View style={{
+                    backgroundColor: '#f0fdf4',
+                    borderWidth: 1.5,
+                    borderColor: '#86efac',
+                    borderRadius: 16,
+                    padding: 12,
+                    marginBottom: 10,
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between'
+                  }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}>
+                      <Text style={{ fontSize: 22 }}>🟢</Text>
+                      <View style={{ flex: 1 }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                          <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#15803d' }}>
+                            {lang === 'hi' ? 'बस लाइव चल रही है • ऑन ड्यूटी' : 'Bus is Live on Route • On Duty'}
+                          </Text>
+                          <View style={{ backgroundColor: '#dcfce7', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 }}>
+                            <Text style={{ fontSize: 10, fontWeight: 'bold', color: '#16a34a' }}>
+                              GPS LIVE
+                            </Text>
+                          </View>
+                        </View>
+                        <Text style={{ fontSize: 12, color: '#166534', marginTop: 2 }}>
+                          {lang === 'hi'
+                            ? `चालक: ${activeChild.driverNameHi || 'राजेश कुमार'} • बस: ${activeChild.busNo}`
+                            : `Driver: ${activeChild.driverNameEn || 'Rajesh Kumar'} • Bus: ${activeChild.busNo}`}
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+                )}
+
                 {/* Visual HUD Map & Google Maps Integration */}
                 <View style={styles.mapSimulationBox}>
                   {/* Top Row: Big ETA + Next Stop */}
                   <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <View style={styles.mapEtaBadge}>
-                      <View style={styles.mapEtaNumBox}>
-                        <Text style={styles.mapEtaNum}>{activeChild.etaMins}</Text>
-                        <Text style={styles.mapEtaMin}>{t.minsUnit}</Text>
+                      <View style={[styles.mapEtaNumBox, !isTripActive && { backgroundColor: '#64748b' }]}>
+                        {isTripActive ? (
+                          <>
+                            <Text style={styles.mapEtaNum}>{activeChild.etaMins}</Text>
+                            <Text style={styles.mapEtaMin}>{t.minsUnit}</Text>
+                          </>
+                        ) : (
+                          <>
+                            <Text style={{ fontSize: 18 }}>🅿️</Text>
+                            <Text style={styles.mapEtaMin}>{lang === 'hi' ? 'पार्क्ड' : 'PARKED'}</Text>
+                          </>
+                        )}
                       </View>
                       <View style={{ flex: 1 }}>
-                        <Text style={styles.mapEtaSub}>{t.etaTitle}</Text>
+                        <Text style={styles.mapEtaSub}>
+                          {isTripActive 
+                            ? t.etaTitle 
+                            : (lang === 'hi' ? 'बस की वर्तमान स्थिति' : 'Current Bus Status')}
+                        </Text>
                         <Text style={styles.mapEtaStop} numberOfLines={1}>
-                          {lang === 'hi' ? activeChild.stopNameHi : activeChild.stopNameEn}
+                          {isTripActive 
+                            ? (lang === 'hi' ? activeChild.stopNameHi : activeChild.stopNameEn)
+                            : (lang === 'hi' ? 'स्कूल परिसर में खड़ी है' : 'Parked at School Campus')}
                         </Text>
                       </View>
                     </View>
 
                     <TouchableOpacity 
-                      style={[styles.simToggleBtn, isBusSimulating && { backgroundColor: '#ef4444' }]}
+                      style={[styles.simToggleBtn, isBusSimulating ? { backgroundColor: '#ef4444' } : { backgroundColor: '#10b981' }]}
                       onPress={toggleBusSimulation}
                     >
-                      <Text style={styles.simToggleBtnText}>{isBusSimulating ? t.stopSim : t.startSim}</Text>
+                      <Text style={styles.simToggleBtnText}>
+                        {isBusSimulating 
+                          ? (lang === 'hi' ? '⏹️ टेस्ट बंद' : 'Stop Test') 
+                          : (lang === 'hi' ? '▶️ लाइव टेस्ट' : 'Test Live')}
+                      </Text>
                     </TouchableOpacity>
                   </View>
 
@@ -4865,9 +4963,27 @@ export default function App() {
                     <View style={[styles.roadStopPoint, { left: '94%' }]} />
 
                     {/* Animated Moving Bus Marker with Radar Halo */}
-                    <View style={[styles.busPin, { left: `${Math.min(72, Math.max(8, 72 - activeChild.etaMins * 5.3))}%` }]}>
-                      <View style={styles.busRadarPulse} />
+                    <View style={[
+                      styles.busPin, 
+                      { left: isTripActive ? `${Math.min(72, Math.max(8, 72 - activeChild.etaMins * 5.3))}%` : '8%' }
+                    ]}>
+                      {isTripActive && <View style={styles.busRadarPulse} />}
                       <Text style={{ fontSize: 26 }}>🚌</Text>
+                      {!isTripActive && (
+                        <View style={{
+                          position: 'absolute',
+                          top: -16,
+                          left: -12,
+                          backgroundColor: '#334155',
+                          paddingHorizontal: 5,
+                          paddingVertical: 1,
+                          borderRadius: 4
+                        }}>
+                          <Text style={{ color: '#cbd5e1', fontSize: 8, fontWeight: 'bold' }}>
+                            {lang === 'hi' ? 'स्कूल (खड़ी है)' : 'Parked'}
+                          </Text>
+                        </View>
+                      )}
                     </View>
 
                     {/* Target Stop Pin */}
@@ -4880,19 +4996,50 @@ export default function App() {
                   <View style={styles.hudMetricsRow}>
                     <View style={styles.hudMetricPill}>
                       <Text style={styles.hudMetricLabel}>{lang === 'hi' ? 'गति' : 'Speed'}</Text>
-                      <Text style={styles.hudMetricValue}>{activeChild.speedKmh} km/h</Text>
+                      <Text style={styles.hudMetricValue}>
+                        {isTripActive ? `${activeChild.speedKmh} km/h` : '0 km/h'}
+                      </Text>
                     </View>
                     <View style={styles.hudMetricPill}>
-                      <Text style={styles.hudMetricLabel}>{lang === 'hi' ? 'दूरी' : 'Distance'}</Text>
-                      <Text style={styles.hudMetricValue}>
-                        {activeChild.etaMins === 0 ? (lang === 'hi' ? 'स्टॉप पर' : 'Arrived') : `${(activeChild.etaMins * 0.3).toFixed(1)} km`}
+                      <Text style={styles.hudMetricLabel}>{lang === 'hi' ? 'वास्तविक दूरी' : 'Live Distance'}</Text>
+                      <Text style={[styles.hudMetricValue, !isTripActive && { color: '#fbbf24', fontSize: 12 }]}>
+                        {isTripActive 
+                          ? (activeChild.etaMins === 0 
+                              ? (lang === 'hi' ? 'स्टॉप पर' : 'Arrived') 
+                              : `${(activeChild.etaMins * 0.3).toFixed(1)} km`)
+                          : (lang === 'hi' ? 'स्कूल में (0 km)' : 'At School (0 km)')}
                       </Text>
                     </View>
                     <View style={styles.hudMetricPill}>
                       <Text style={styles.hudMetricLabel}>{lang === 'hi' ? 'ट्रैफिक' : 'Traffic'}</Text>
-                      <Text style={styles.hudMetricValue}>{t.trafficTagText}</Text>
+                      <Text style={styles.hudMetricValue}>
+                        {isTripActive ? t.trafficTagText : (lang === 'hi' ? 'स्टैंडबाय' : 'Standby')}
+                      </Text>
                     </View>
                   </View>
+
+                  {!isTripActive && (
+                    <TouchableOpacity 
+                      style={{
+                        backgroundColor: 'rgba(255,255,255,0.08)',
+                        borderWidth: 1,
+                        borderColor: '#334155',
+                        borderRadius: 12,
+                        padding: 8,
+                        alignItems: 'center',
+                        flexDirection: 'row',
+                        justifyContent: 'center',
+                        gap: 8,
+                        marginTop: 4
+                      }}
+                      onPress={() => setBusRole('driver')}
+                    >
+                      <Text style={{ fontSize: 15 }}>👨‍✈️</Text>
+                      <Text style={{ color: '#38bdf8', fontSize: 12, fontWeight: 'bold' }}>
+                        {lang === 'hi' ? 'चालक मोड में जाकर ड्यूटी चालू (START TRIP) करें →' : 'Switch to Driver Mode to Start Trip →'}
+                      </Text>
+                    </TouchableOpacity>
+                  )}
 
                   {/* Prominent Google Maps Deep-Link Actions */}
                   <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
@@ -4944,7 +5091,7 @@ export default function App() {
                         ]}
                       >
                         <Text style={{ fontSize: isUserStop ? 20 : 18 }}>
-                          {isUserStop ? '🟡' : st.status === 'passed' ? '🟢' : '⚪'}
+                          {isUserStop ? '🟡' : (isTripActive && st.status === 'passed') ? '🟢' : '⚪'}
                         </Text>
                         <View style={{ flex: 1 }}>
                           <Text style={[styles.stopTitle, isUserStop && { color: '#b45309', fontSize: 14 }]}>
@@ -4952,10 +5099,14 @@ export default function App() {
                           </Text>
                           <Text style={[styles.stopSub, isUserStop && { color: '#d97706', fontWeight: 'bold' }]}>
                             {isUserStop 
-                              ? (activeChild.etaMins === 0 
-                                  ? (lang === 'hi' ? '🎉 बस आपके स्टॉप पर पहुँच चुकी है!' : '🎉 Bus has reached your stop!') 
-                                  : (lang === 'hi' ? `बस ${activeChild.etaMins} मिनट दूर है (~ ${(activeChild.etaMins * 0.3).toFixed(1)} km)` : `Bus is ${activeChild.etaMins} mins away (~ ${(activeChild.etaMins * 0.3).toFixed(1)} km)`))
-                              : (lang === 'hi' ? st.subHi : st.subEn)}
+                              ? (isTripActive
+                                  ? (activeChild.etaMins === 0 
+                                      ? (lang === 'hi' ? '🎉 बस आपके स्टॉप पर पहुँच चुकी है!' : '🎉 Bus has reached your stop!') 
+                                      : (lang === 'hi' ? `बस ${activeChild.etaMins} मिनट दूर है (~ ${(activeChild.etaMins * 0.3).toFixed(1)} km)` : `Bus is ${activeChild.etaMins} mins away (~ ${(activeChild.etaMins * 0.3).toFixed(1)} km)`))
+                                  : (lang === 'hi' ? 'चालक अभी ड्यूटी पर नहीं हैं (बस स्कूल में खड़ी है)' : 'Driver off duty (Bus parked at school)'))
+                              : (isTripActive 
+                                  ? (lang === 'hi' ? st.subHi : st.subEn) 
+                                  : (lang === 'hi' ? 'यात्रा प्रारंभ होने की प्रतीक्षा में' : 'Waiting for trip start'))}
                           </Text>
                         </View>
                       </View>
@@ -7236,7 +7387,7 @@ const styles = StyleSheet.create({
   busRoleBtnActive: { backgroundColor: '#fff' },
   busRoleBtnText: { fontSize: 13, fontWeight: 'bold', color: '#64748b' },
   busRoleBtnTextActive: { color: '#0f172a' },
-  mapSimulationBox: { height: 210, backgroundColor: '#0f172a', borderRadius: 26, padding: 14, justifyContent: 'space-between', overflow: 'hidden' },
+  mapSimulationBox: { minHeight: 240, backgroundColor: '#0f172a', borderRadius: 26, padding: 14, justifyContent: 'space-between' },
   mapEtaBadge: { backgroundColor: 'rgba(255,255,255,0.95)', alignSelf: 'flex-start', borderRadius: 16, padding: 8, flexDirection: 'row', alignItems: 'center', gap: 10 },
   mapEtaNumBox: { backgroundColor: '#f97316', borderRadius: 10, paddingHorizontal: 8, paddingVertical: 4, alignItems: 'center' },
   mapEtaNum: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
