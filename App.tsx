@@ -3057,7 +3057,7 @@ export default function App() {
 
   // Calculations for Household Budget
   const totalSpent = expenses.reduce((acc, curr) => acc + curr.amount, 0);
-  const totalSavings = Math.max(0, monthlyIncome - totalSpent);
+  const totalSavings = Math.max(0, monthlyBudget - totalSpent);
   const rationTotal = expenses.filter(e => e.category === 'ration').reduce((a, b) => a + b.amount, 0);
   const feesTotal = expenses.filter(e => e.category === 'fees').reduce((a, b) => a + b.amount, 0);
   const medTotal = expenses.filter(e => e.category === 'med').reduce((a, b) => a + b.amount, 0);
@@ -3078,6 +3078,73 @@ export default function App() {
     const num = parseInt((item.value || '').replace(/[^0-9]/g, ''), 10);
     return acc + (isNaN(num) ? 0 : num);
   }, 0);
+
+
+  // One-Tap Full Family Backup Export via Email / WhatsApp / Cloud
+  const exportFullFamilyBackup = async () => {
+    try {
+      const now = new Date();
+      const dateStr = now.toLocaleDateString(lang === 'hi' ? 'hi-IN' : 'en-IN', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric'
+      });
+      let report = "📦 *MAST - परिवार संपूर्ण डेटा बैकअप* (" + dateStr + ")\n\n";
+      report += "👤 *प्रोफ़ाइल:* " + (userProfile?.name || 'स्वयं') + "\n📱 फ़ोन: " + (userProfile?.mobile || '-') + "\n📧 ईमेल: " + (userProfile?.email || '-') + "\n\n";
+      
+      report += "👨‍👩‍👧‍👦 *परिवार के सदस्य (" + familyMembers.length + "):*\n";
+      if (familyMembers.length === 0) {
+        report += "(कोई सदस्य नहीं जोड़ा गया)\n";
+      } else {
+        familyMembers.forEach((m: any, i: number) => {
+          const mName = m.name || m.nameHi || m.nameEn || 'सदस्य';
+          const mRel = m.relationHi || m.relationEn || m.role || '-';
+          report += (i + 1) + ". " + mName + " (" + mRel + ") - 📞 " + (m.phone || '-') + ", ब्लड: " + (m.bloodGroup || '-') + "\n";
+        });
+      }
+
+      report += "\n💊 *दवाएं (" + medicines.length + "):*\n";
+      if (medicines.length === 0) {
+        report += "(कोई दवा शेड्यूल नहीं)\n";
+      } else {
+        medicines.forEach((med: any, i: number) => {
+          const medName = med.nameHi || med.nameEn || med.name || 'दवा';
+          report += (i + 1) + ". " + medName + " - ⏰ " + (med.time || '-') + ", खुराक: " + (med.dosage || '-') + "\n";
+        });
+      }
+
+      report += "\n🔌 *उपकरण व वारंटी (" + appliances.length + "):*\n";
+      if (appliances.length === 0) {
+        report += "(कोई उपकरण नहीं)\n";
+      } else {
+        appliances.forEach((app: any, i: number) => {
+          const appName = app.nameHi || app.nameEn || app.name || 'उपकरण';
+          report += (i + 1) + ". " + appName + " (" + (app.brand || '-') + ") - वारंटी: " + (app.expiryDate || '-') + "\n";
+        });
+      }
+
+      report += "\n🪙 *स्वर्ण / जेवर (" + goldItems.length + "):*\n";
+      if (goldItems.length === 0) {
+        report += "(कोई प्रविष्टि नहीं)\n";
+      } else {
+        goldItems.forEach((g: any, i: number) => {
+          report += (i + 1) + ". " + (g.name || 'जेवर') + " - वजन: " + (g.weight || '-') + ", शुद्धता: " + (g.purity || '-') + "\n";
+        });
+      }
+
+      report += "\n💰 *मासिक घरेलू बजट:* ₹" + monthlyBudget.toLocaleString('en-IN') + "\n";
+      report += "💸 *कुल खर्च:* ₹" + totalSpent.toLocaleString('en-IN') + "\n";
+      report += "\n-- MAST (Family Digital Assistant) से सुरक्षित रूप से बैकअप किया गया --";
+
+      await Share.share({
+        title: lang === 'hi' ? 'MAST परिवार बैकअप' : 'MAST Family Backup',
+        message: report
+      });
+    } catch (err) {
+      console.error('Backup share error:', err);
+      Alert.alert(lang === 'hi' ? 'बैकअप त्रुटि' : 'Backup Error', lang === 'hi' ? 'बैकअप शेयर करने में समस्या आई' : 'Failed to export backup');
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
