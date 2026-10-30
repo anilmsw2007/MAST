@@ -2622,13 +2622,19 @@ export default function App() {
     setActiveChildId(newChild.id);
     await AsyncStorage.setItem('@mast_v7_school_children', JSON.stringify(updated));
 
-    // Automatically generate Reminders if opted
+    // Automatically generate Reminders if opted for Next Due Date
     const newRemindersCreated: any[] = [];
     const monthsShort = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const curMonth = new Date().getMonth();
-    const curMonthName = monthsShort[curMonth];
+    const now = new Date();
+    const todayDate = now.getDate();
+    // If today is past the due day (e.g. today is 30th and due day is 5th), next due date is next month!
+    const targetDateObj = new Date(now.getFullYear(), now.getMonth(), dueDayNum);
+    if (todayDate > dueDayNum) {
+      targetDateObj.setMonth(targetDateObj.getMonth() + 1);
+    }
+    const targetMonthName = monthsShort[targetDateObj.getMonth()];
     const dayStr = dueDayNum < 10 ? `0${dueDayNum}` : `${dueDayNum}`;
-    const dueDateDisplay = `${dayStr} ${curMonthName}`;
+    const dueDateDisplay = `${dayStr} ${targetMonthName}`;
 
     if (autoSetChildReminder) {
       if (sFeeNum > 0) {
