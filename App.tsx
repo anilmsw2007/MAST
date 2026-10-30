@@ -1341,6 +1341,7 @@ export default function App() {
   const [newChildBusFee, setNewChildBusFee] = useState('');
   const [newChildDueDay, setNewChildDueDay] = useState('10');
   const [autoSetChildReminder, setAutoSetChildReminder] = useState(true);
+  const [editingChildId, setEditingChildId] = useState<string | null>(null);
 
   // Bus Role State
   const [busRole, setBusRole] = useState<'parent' | 'driver'>('parent');
@@ -2257,9 +2258,38 @@ export default function App() {
     );
   };
 
-  const toggleReminderPaid = (id: number) => {
-    const updated = upcomingReminders.map(r => r.id === id ? { ...r, paid: !r.paid } : r);
-    saveReminders(updated);
+  const toggleReminderPaid = async (id: number) => {
+    const targetRem = upcomingReminders.find(r => r.id === id);
+    if (!targetRem) return;
+    const willBePaid = !targetRem.paid;
+
+    const updated = upcomingReminders.map(r => r.id === id ? { ...r, paid: willBePaid } : r);
+    await saveReminders(updated);
+
+    // Automation: When marked as Paid, automatically link to Monthly Household Budget Expenses!
+    if (willBePaid) {
+      const numAmount = parseFloat((targetRem.amount || '').replace(/[^0-9.]/g, '')) || 0;
+      if (numAmount > 0) {
+        const title = targetRem.titleHi || targetRem.titleEn || 'फीस व बिल';
+        const newExpenseEntry = {
+          id: Date.now(),
+          titleHi: `${title} (भुगतान)`,
+          titleEn: `${title} (Paid)`,
+          amount: numAmount,
+          category: targetRem.category === 'fees' ? 'fees' : targetRem.category === 'med' ? 'med' : 'fees',
+          date: lang === 'hi' ? 'आज' : 'Today'
+        };
+        const updatedExpenses = [newExpenseEntry, ...expenses];
+        await saveExpenses(updatedExpenses);
+
+        Alert.alert(
+          lang === 'hi' ? '✓ भुगतान दर्ज!' : '✓ Payment Recorded!',
+          lang === 'hi'
+            ? `${title} का ₹${numAmount.toLocaleString('en-IN')} आपके मासिक घरेलू खर्च व बजट में अपने-आप जुड़ गया है।`
+            : `${title} of ₹${numAmount.toLocaleString('en-IN')} has been automatically added to your Household Budget & Expenses.`
+        );
+      }
+    }
   };
 
   const deleteExpense = (id: number) => {
@@ -2565,6 +2595,43 @@ export default function App() {
     }));
   };
 
+
+  // Open Add Child (reset all form fields)
+  const openAddChildModal = () => {
+    setEditingChildId(null);
+    setNewChildName('');
+    setNewChildAvatar('👧');
+    setNewChildSchool('');
+    setNewChildGrade('');
+    setNewChildBusNo('');
+    setNewChildBusCode('');
+    setNewChildStopName('');
+    setNewChildSchoolFee('');
+    setNewChildBusFee('');
+    setNewChildDueDay('10');
+    setAutoSetChildReminder(true);
+    setIsAddChildModalOpen(true);
+  };
+
+  // Open Edit Child (prefill with child data)
+  const openEditChildModal = (child: any) => {
+    setEditingChildId(child.id);
+    setNewChildName(child.name || child.nameEn || '');
+    setNewChildAvatar(child.avatar || '👧');
+    setNewChildSchool(child.schoolNameHi || child.schoolNameEn || '');
+    setNewChildGrade(child.grade || '');
+    setNewChildBusNo(child.busNo || '');
+    setNewChildBusCode(child.busCode || '');
+    const cleanStop = (child.stopNameHi || child.stopNameEn || '').replace(/\s*\(आपका स्टॉप\)|\s*\(Your Stop\)/g, '');
+    setNewChildStopName(cleanStop);
+    setNewChildSchoolFee((child.schoolFee || '').replace(/[^0-9.]/g, ''));
+    setNewChildBusFee((child.busFee || '').replace(/[^0-9.]/g, ''));
+    setNewChildDueDay(child.dueDay ? String(child.dueDay) : '10');
+    if (child.state) setParentState(child.state);
+    if (child.district) setParentDistrict(child.district);
+    setAutoSetChildReminder(true);
+    setIsAddChildModalOpen(true);
+  };
   const handleAddNewChild = async () => {
     if (!newChildName.trim() || !newChildSchool.trim()) {
       Alert.alert('Notice', lang === 'hi' ? 'बच्चे व स्कूल का नाम लिखें' : 'Please enter child & school name');
@@ -2575,8 +2642,17 @@ export default function App() {
     const stopName = newChildStopName.trim() || (lang === 'hi' ? 'घर का स्टॉप' : 'Home Stop');
     const busKey = generateUniversalBusKey(parentState, parentDistrict, schoolName, busNo);
 
-    const newChild = {
-      id: `child_${Date.now()}`,
+    const sFeeNum = parseFloat(newChildSchoolFee) || 0;
+    const bFeeNum = parseFloat(newChildBusFee) || 0;
+    const dueDayNum = parseInt(newChildDueDay, 10) || 10;
+    const isEditing = !!editingChildId;
+    const currentChildId = editingChildId || `child_${Date.now()}`;
+
+    // Existing child if editing, or brand new child
+    const existingChild = schoolChildren.find(c => c.id === editingChildId);
+
+    const savedChild = {
+      id: currentChildId,
       name: newChildName.trim(),
       nameEn: newChildName.trim(),
       avatar: newChildAvatar,
@@ -2584,42 +2660,45 @@ export default function App() {
       schoolNameEn: newChildSchool.trim(),
       grade: newChildGrade.trim() || 'Class 1',
       busNo: busNo,
-      busCode: busKey, state: parentState, district: parentDistrict,
-      vehicleNo: 'DL 01 GPS (School Bus)',
+      busCode: busKey,
+      state: parentState,
+      district: parentDistrict,
+      vehicleNo: existingChild?.vehicleNo || 'DL 01 GPS (School Bus)',
       stopNameHi: `${stopName} (आपका स्टॉप)`,
       stopNameEn: `${stopName} (Your Stop)`,
-      stopCoords: { lat: 28.6250, lng: 77.3000 },
-      busCoords: { lat: 28.6300, lng: 77.2900 },
-      rfidTag: `ID-${Math.floor(1000 + Math.random() * 9000)}`,
-      seatNo: 'Auto Assigned',
-      driverNameHi: 'स्कूल चालक',
-      driverNameEn: 'School Driver',
-      driverPhone: '98XXXXXXXX',
-      conductorNameHi: 'सहायक',
-      conductorNameEn: 'Bus Attendant',
-      conductorPhone: '98XXXXXXXX',
-      schoolHelpline: '011-23456789',
-      etaMins: 10,
-      speedKmh: 35,
-      isBoarded: true,
+      stopCoords: existingChild?.stopCoords || { lat: 28.6250, lng: 77.3000 },
+      busCoords: existingChild?.busCoords || { lat: 28.6300, lng: 77.2900 },
+      rfidTag: existingChild?.rfidTag || `ID-${Math.floor(1000 + Math.random() * 9000)}`,
+      seatNo: existingChild?.seatNo || 'Auto Assigned',
+      driverNameHi: existingChild?.driverNameHi || 'स्कूल चालक',
+      driverNameEn: existingChild?.driverNameEn || 'School Driver',
+      driverPhone: existingChild?.driverPhone || '98XXXXXXXX',
+      conductorNameHi: existingChild?.conductorNameHi || 'सहायक',
+      conductorNameEn: existingChild?.conductorNameEn || 'Bus Attendant',
+      conductorPhone: existingChild?.conductorPhone || '98XXXXXXXX',
+      schoolHelpline: existingChild?.schoolHelpline || '011-23456789',
+      etaMins: existingChild?.etaMins || 10,
+      speedKmh: existingChild?.speedKmh || 35,
+      isBoarded: existingChild ? existingChild.isBoarded : true,
       stops: [
         { id: 1, time: '07:15 AM', titleHi: `${newChildSchool.trim()} गेट`, titleEn: `${newChildSchool.trim()} Gate`, subHi: 'प्रस्थान ✓', subEn: 'Departed ✓', status: 'passed' },
         { id: 2, time: '07:30 AM', titleHi: `${stopName} (आपका स्टॉप)`, titleEn: `${stopName} (Your Stop)`, subHi: 'बस 10 मिनट दूर है', subEn: 'Bus is 10 mins away', status: 'target', isUserStop: true },
         { id: 3, time: '07:45 AM', titleHi: 'अंतिम स्टॉप (Final Stop)', titleEn: 'Final Terminal', subHi: 'आगामी', subEn: 'Upcoming', status: 'upcoming' }
-      ]
+      ],
+      schoolFee: sFeeNum > 0 ? `₹${sFeeNum}` : '',
+      busFee: bFeeNum > 0 ? `₹${bFeeNum}` : '',
+      dueDay: dueDayNum
     };
 
-    // Attach fee details to child profile
-    const sFeeNum = parseFloat(newChildSchoolFee) || 0;
-    const bFeeNum = parseFloat(newChildBusFee) || 0;
-    const dueDayNum = parseInt(newChildDueDay, 10) || 10;
-    newChild.schoolFee = sFeeNum > 0 ? `₹${sFeeNum}` : '';
-    newChild.busFee = bFeeNum > 0 ? `₹${bFeeNum}` : '';
-    newChild.dueDay = dueDayNum;
+    let updated: any[] = [];
+    if (isEditing) {
+      updated = schoolChildren.map(c => c.id === editingChildId ? savedChild : c);
+    } else {
+      updated = [...schoolChildren, savedChild];
+    }
 
-    const updated = [...schoolChildren, newChild];
     setSchoolChildren(updated);
-    setActiveChildId(newChild.id);
+    setActiveChildId(savedChild.id);
     await AsyncStorage.setItem('@mast_v7_school_children', JSON.stringify(updated));
 
     // Automatically generate Reminders if opted for Next Due Date
@@ -3858,6 +3937,75 @@ export default function App() {
               </View>
             </View>
 
+            {/* Pending Fees & Due Reminders Automatic Alert Widget on Home Screen */}
+            {(() => {
+              const pendingFees = upcomingReminders.filter(r => !r.paid);
+              if (pendingFees.length === 0) return null;
+              return (
+                <View style={[styles.card, { backgroundColor: '#fff7ed', borderColor: '#fed7aa', borderWidth: 1.5, padding: 14 }]}>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                      <Text style={{ fontSize: 18 }}>🔔</Text>
+                      <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#9a3412' }}>
+                        {lang === 'hi' ? `आगामी फीस व बिल अलर्ट (${pendingFees.length} देय)` : `Pending Fees & Bill Alerts (${pendingFees.length})`}
+                      </Text>
+                    </View>
+                    <TouchableOpacity onPress={() => handleTabPress('reminders')}>
+                      <Text style={{ fontSize: 11, fontWeight: 'bold', color: '#ea580c' }}>
+                        {lang === 'hi' ? 'सभी देखें »' : 'View All »'}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+
+                  <View style={{ gap: 8 }}>
+                    {pendingFees.slice(0, 3).map(item => (
+                      <View
+                        key={item.id}
+                        style={{
+                          flexDirection: 'row',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          backgroundColor: '#ffffff',
+                          padding: 10,
+                          borderRadius: 10,
+                          borderWidth: 1,
+                          borderColor: '#ffedd5'
+                        }}
+                      >
+                        <TouchableOpacity
+                          style={[styles.checkCircle, item.paid && styles.checkCircleDone]}
+                          onPress={() => toggleReminderPaid(item.id)}
+                        >
+                          <Text style={{ color: '#fff', fontSize: 13, fontWeight: 'bold' }}>{item.paid ? '✓' : ''}</Text>
+                        </TouchableOpacity>
+
+                        <View style={{ flex: 1, marginHorizontal: 8 }}>
+                          <Text style={{ fontSize: 13, fontWeight: 'bold', color: '#0f172a' }} numberOfLines={1}>
+                            {lang === 'hi' ? item.titleHi : item.titleEn}
+                          </Text>
+                          <Text style={{ fontSize: 11, color: '#64748b', marginTop: 1 }}>
+                            📅 {lang === 'hi' ? 'अंतिम तारीख' : 'Due'}: <Text style={{ fontWeight: 'bold', color: '#ea580c' }}>{item.date}</Text>
+                          </Text>
+                        </View>
+
+                        <View style={{ alignItems: 'flex-end' }}>
+                          <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#c2410c' }}>{item.amount}</Text>
+                          <TouchableOpacity
+                            style={{ backgroundColor: '#ea580c', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6, marginTop: 4 }}
+                            onPress={() => toggleReminderPaid(item.id)}
+                          >
+                            <Text style={{ color: '#fff', fontSize: 10, fontWeight: 'bold' }}>
+                              {lang === 'hi' ? 'भुगतान करें ✓' : 'Pay ✓'}
+                            </Text>
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+                    ))}
+                  </View>
+                </View>
+              );
+            })()}
+
             {/* Monthly Expense & Budget WITH DYNAMIC CALCULATIONS & RECENT EXPENSES LIST */}
             <View style={styles.budgetCard}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -4377,7 +4525,7 @@ export default function App() {
                     </Text>
                     <TouchableOpacity 
                       style={[styles.addSmallBtn, { marginTop: 20, paddingHorizontal: 20, paddingVertical: 12, borderRadius: 12 }]} 
-                      onPress={() => setIsAddChildModalOpen(true)}
+                      onPress={openAddChildModal}
                     >
                       <Text style={[styles.addSmallBtnText, { fontSize: 14 }]}>+ {lang === 'hi' ? 'बच्चा व स्कूल बस जोड़ें' : 'Add Child & School Bus'}</Text>
                     </TouchableOpacity>
@@ -4392,7 +4540,7 @@ export default function App() {
                     </Text>
                     <TouchableOpacity 
                       style={{ backgroundColor: '#ea580c', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 }}
-                      onPress={() => setIsAddChildModalOpen(true)}
+                      onPress={openAddChildModal}
                     >
                       <Text style={{ color: '#fff', fontSize: 11, fontWeight: 'bold' }}>+ {lang === 'hi' ? 'नया बच्चा / बस जोड़ें' : 'Add Child / Bus'}</Text>
                     </TouchableOpacity>
@@ -4472,11 +4620,23 @@ export default function App() {
                     </View>
                   </View>
 
-                  {schoolChildren.length > 1 && (
-                    <TouchableOpacity onPress={() => deleteSchoolChild(activeChild.id)} style={{ padding: 6 }}>
-                      <Text style={{ fontSize: 16 }}>🗑️</Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                    <TouchableOpacity 
+                      onPress={() => openEditChildModal(activeChild)} 
+                      style={{ padding: 6, backgroundColor: '#f1f5f9', borderRadius: 8 }}
+                    >
+                      <Text style={{ fontSize: 16 }}>✏️</Text>
                     </TouchableOpacity>
-                  )}
+
+                    {schoolChildren.length > 1 && (
+                      <TouchableOpacity 
+                        onPress={() => deleteSchoolChild(activeChild.id)} 
+                        style={{ padding: 6, backgroundColor: '#fee2e2', borderRadius: 8 }}
+                      >
+                        <Text style={{ fontSize: 16 }}>🗑️</Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
                 </View>
 
                 {/* Visual HUD Map & Google Maps Integration */}
@@ -6140,8 +6300,12 @@ export default function App() {
         <View style={styles.modalBackdrop}>
           <View style={styles.modalContent}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-              <Text style={styles.modalHeaderTitle}>🎒 {lang === 'hi' ? 'नया बच्चा / स्कूल बस जोड़ें' : 'Add Child & School Bus'}</Text>
-              <TouchableOpacity onPress={() => setIsAddChildModalOpen(false)}>
+              <Text style={styles.modalHeaderTitle}>
+                {editingChildId
+                  ? (lang === 'hi' ? '✏️ बच्चे की जानकारी संपादित करें' : '✏️ Edit Child & Bus Details')
+                  : (lang === 'hi' ? '🎒 नया बच्चा / स्कूल बस जोड़ें' : '🎒 Add Child & School Bus')}
+              </Text>
+              <TouchableOpacity onPress={() => { setEditingChildId(null); setIsAddChildModalOpen(false); }}>
                 <Text style={{ fontSize: 22, color: '#64748b', fontWeight: 'bold' }}>✕</Text>
               </TouchableOpacity>
             </View>
@@ -6350,7 +6514,11 @@ export default function App() {
             </ScrollView>
 
             <TouchableOpacity style={styles.saveSubmitBtn} onPress={handleAddNewChild}>
-              <Text style={styles.saveSubmitBtnText}>{lang === 'hi' ? '💾 बच्चा व बस सुरक्षित सेव करें' : '💾 Save Child & Bus'}</Text>
+              <Text style={styles.saveSubmitBtnText}>
+                {editingChildId
+                  ? (lang === 'hi' ? '✓ बदलाव सुरक्षित करें' : '✓ Update Child & Bus')
+                  : (lang === 'hi' ? '💾 बच्चा व बस सुरक्षित सेव करें' : '💾 Save Child & Bus')}
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
