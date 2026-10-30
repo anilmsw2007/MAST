@@ -2901,24 +2901,22 @@ export default function App() {
       }
     };
 
-    // PanResponder for Left/Right Swiping on Calendar
-    const panResponder = useRef(
-      PanResponder.create({
-        onStartShouldSetPanResponder: () => false,
-        onMoveShouldSetPanResponder: (_, gestureState) => {
-          return Math.abs(gestureState.dx) > 25 && Math.abs(gestureState.dy) < 30;
-        },
-        onPanResponderRelease: (_, gestureState) => {
-          if (gestureState.dx > 40) {
-            // Swiped Right -> Previous Month
-            prevMonth();
-          } else if (gestureState.dx < -40) {
-            // Swiped Left -> Next Month
-            nextMonth();
-          }
+    // Pure PanResponder for Left/Right Swiping on Calendar (No Hook to comply with Rules of Hooks)
+    const panResponder = PanResponder.create({
+      onStartShouldSetPanResponder: () => false,
+      onMoveShouldSetPanResponder: (_, gestureState) => {
+        return Math.abs(gestureState.dx) > 20 && Math.abs(gestureState.dy) < 25;
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        if (gestureState.dx > 35) {
+          // Swiped Right -> Previous Month
+          prevMonth();
+        } else if (gestureState.dx < -35) {
+          // Swiped Left -> Next Month
+          nextMonth();
         }
-      })
-    ).current;
+      }
+    });
 
     // Calendar calculation
     const firstDay = new Date(calendarViewYear, calendarViewMonth, 1).getDay();
@@ -5382,9 +5380,6 @@ export default function App() {
             </TouchableOpacity>
           </View>
         </View>
-
-        {/* Nested Universal Interactive Calendar Picker */}
-        {calendarTarget && renderCalendarCard()}
       </Modal>
 
       {/* ================= MODAL: ADD GOLD / SILVER ================= */}
@@ -5501,9 +5496,6 @@ export default function App() {
             </TouchableOpacity>
           </View>
         </View>
-
-        {/* Nested Universal Interactive Calendar Picker */}
-        {calendarTarget && renderCalendarCard()}
       </Modal>
 
       {/* ================= MODAL: ADD DOCUMENT ================= */}
@@ -5598,9 +5590,6 @@ export default function App() {
             </TouchableOpacity>
           </View>
         </View>
-
-        {/* Nested Universal Interactive Calendar Picker */}
-        {calendarTarget && renderCalendarCard()}
       </Modal>
 
       {/* ================= MODAL: ADD BILL / REMINDER ================= */}
@@ -5672,9 +5661,6 @@ export default function App() {
             </TouchableOpacity>
           </View>
         </View>
-
-        {/* Nested Universal Interactive Calendar Picker */}
-        {calendarTarget && renderCalendarCard()}
       </Modal>
 
       {/* ================= MODAL: ADD EXPENSE ================= */}
@@ -5754,9 +5740,6 @@ export default function App() {
             </TouchableOpacity>
           </View>
         </View>
-
-        {/* Nested Universal Interactive Calendar Picker */}
-        {calendarTarget && renderCalendarCard()}
       </Modal>
 
       {/* ================= MODAL: ADD FAMILY MEMBER ================= */}
@@ -5846,9 +5829,6 @@ export default function App() {
             </TouchableOpacity>
           </View>
         </View>
-
-        {/* Nested Universal Interactive Calendar Picker */}
-        {calendarTarget && renderCalendarCard()}
       </Modal>
 
       {/* ================= MODAL: ADD DIARY ================= */}
@@ -5922,9 +5902,6 @@ export default function App() {
             </TouchableOpacity>
           </View>
         </View>
-
-        {/* Nested Universal Interactive Calendar Picker */}
-        {calendarTarget && renderCalendarCard()}
       </Modal>
 
       {/* ================= MODAL: DOCTOR RX SLIP ================= */}
@@ -6376,6 +6353,11 @@ export default function App() {
             </TouchableOpacity>
           </View>
         </View>
+      </Modal>
+
+      {/* ================= UNIVERSAL HIGH-PRIORITY CALENDAR MODAL ================= */}
+      <Modal visible={calendarTarget !== null} transparent animationType="fade" onRequestClose={closeCalendar}>
+        {calendarTarget && renderCalendarCard()}
       </Modal>
 
       {/* ================= MODAL: PHONE SECURITY SCREEN LOCK ================= */}
