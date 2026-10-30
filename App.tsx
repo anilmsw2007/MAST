@@ -1466,6 +1466,19 @@ export default function App() {
   const [newDocNumber, setNewDocNumber] = useState('');
   const [newDocPhoto, setNewDocPhoto] = useState<string | null>(null);
 
+  // Universal Calendar Date Picker State
+  const [calendarTarget, setCalendarTarget] = useState<'appliance' | 'reminder' | 'expense' | 'member' | 'doc' | 'gold' | 'diary' | null>(null);
+  const [calendarViewYear, setCalendarViewYear] = useState<number>(new Date().getFullYear());
+  const [calendarViewMonth, setCalendarViewMonth] = useState<number>(new Date().getMonth());
+  const [calendarSelectedDate, setCalendarSelectedDate] = useState<Date>(new Date());
+
+  // Additional Date States for Forms
+  const [newExpDate, setNewExpDate] = useState('आज');
+  const [newMemberDob, setNewMemberDob] = useState('');
+  const [newDocExpiry, setNewDocExpiry] = useState('');
+  const [newGoldDate, setNewGoldDate] = useState('');
+  const [newDiaryDate, setNewDiaryDate] = useState('आज');
+
   // Reminder Form State
   const [newRemTitle, setNewRemTitle] = useState('');
   const [newRemAmount, setNewRemAmount] = useState('');
@@ -2779,6 +2792,263 @@ export default function App() {
   };
 
   // Add Handlers
+  // Calendar Control Helpers
+  const openCalendar = (
+    target: 'appliance' | 'reminder' | 'expense' | 'member' | 'doc' | 'gold' | 'diary',
+    currentVal?: string
+  ) => {
+    let initDate = new Date();
+    if (currentVal && currentVal !== 'आज' && currentVal !== 'Today') {
+      const parsed = new Date(currentVal);
+      if (!isNaN(parsed.getTime())) {
+        initDate = parsed;
+      }
+    }
+    setCalendarSelectedDate(initDate);
+    setCalendarViewYear(initDate.getFullYear());
+    setCalendarViewMonth(initDate.getMonth());
+    setCalendarTarget(target);
+  };
+
+  const closeCalendar = () => {
+    setCalendarTarget(null);
+  };
+
+  const applySelectedDate = (date: Date) => {
+    const monthsEn = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const day = date.getDate();
+    const dayStr = day < 10 ? '0' + day : '' + day;
+    const monthIdx = date.getMonth();
+    const year = date.getFullYear();
+    const formattedFull = dayStr + ' ' + monthsEn[monthIdx] + ' ' + year;
+    const formattedShort = dayStr + ' ' + monthsEn[monthIdx];
+
+    if (calendarTarget === 'appliance') {
+      setNewVaultWarranty(formattedFull);
+    } else if (calendarTarget === 'reminder') {
+      setNewRemDate(formattedShort);
+    } else if (calendarTarget === 'expense') {
+      setNewExpDate(formattedFull);
+    } else if (calendarTarget === 'member') {
+      const calculatedAge = Math.max(0, new Date().getFullYear() - year);
+      setNewMemberAge('' + calculatedAge);
+      setNewMemberDob(formattedFull);
+    } else if (calendarTarget === 'doc') {
+      setNewDocExpiry(formattedFull);
+    } else if (calendarTarget === 'gold') {
+      setNewGoldDate(formattedFull);
+    } else if (calendarTarget === 'diary') {
+      setNewDiaryDate(formattedFull);
+    }
+    setCalendarTarget(null);
+  };
+
+  // Reusable Calendar Overlay Card Component
+  const renderCalendarCard = () => {
+    const monthNamesHi = [
+      'जनवरी', 'फ़रवरी', 'मार्च', 'अप्रैल', 'मई', 'जून',
+      'जुलाई', 'अगस्त', 'सितंबर', 'अक्टूबर', 'नवंबर', 'दिसंबर'
+    ];
+    const monthNamesEn = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    const weekDaysHi = ['रवि', 'सोम', 'मंगल', 'बुध', 'गुरु', 'शुक्र', 'शनि'];
+    
+    const currentMonthLabel = monthNamesHi[calendarViewMonth] + ' (' + monthNamesEn[calendarViewMonth].slice(0, 3) + ') ' + calendarViewYear;
+    
+    // Calendar calculation
+    const firstDay = new Date(calendarViewYear, calendarViewMonth, 1).getDay();
+    const daysInMonth = new Date(calendarViewYear, calendarViewMonth + 1, 0).getDate();
+    
+    const prevMonth = () => {
+      if (calendarViewMonth === 0) {
+        setCalendarViewMonth(11);
+        setCalendarViewYear(calendarViewYear - 1);
+      } else {
+        setCalendarViewMonth(calendarViewMonth - 1);
+      }
+    };
+
+    const nextMonth = () => {
+      if (calendarViewMonth === 11) {
+        setCalendarViewMonth(0);
+        setCalendarViewYear(calendarViewYear + 1);
+      } else {
+        setCalendarViewMonth(calendarViewMonth + 1);
+      }
+    };
+
+    const prevYear = (delta: number = 1) => {
+      setCalendarViewYear(calendarViewYear - delta);
+    };
+
+    const nextYear = (delta: number = 1) => {
+      setCalendarViewYear(calendarViewYear + delta);
+    };
+
+    const today = new Date();
+    const isSelected = (d: number) => {
+      return (
+        calendarSelectedDate.getFullYear() === calendarViewYear &&
+        calendarSelectedDate.getMonth() === calendarViewMonth &&
+        calendarSelectedDate.getDate() === d
+      );
+    };
+
+    const isToday = (d: number) => {
+      return (
+        today.getFullYear() === calendarViewYear &&
+        today.getMonth() === calendarViewMonth &&
+        today.getDate() === d
+      );
+    };
+
+    const blanks = Array.from({ length: firstDay }, (_, i) => i);
+    const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
+
+    return (
+      <View style={styles.calendarModalOverlay}>
+        <View style={styles.calendarCard}>
+          {/* Header */}
+          <View style={styles.calendarHeader}>
+            <Text style={styles.calendarCardTitle}>
+              📅 {lang === 'hi' ? 'कैलेंडर से तारीख चुनें' : 'Select Date from Calendar'}
+            </Text>
+            <TouchableOpacity onPress={closeCalendar} style={{ padding: 4 }}>
+              <Text style={{ fontSize: 20, color: '#64748b', fontWeight: 'bold' }}>✕</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Year & Month Navigator */}
+          <View style={styles.calendarNavRow}>
+            <TouchableOpacity onPress={() => prevYear(1)} style={styles.calendarNavBtn}>
+              <Text style={styles.calendarNavBtnText}>« -1 वर्ष</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={prevMonth} style={styles.calendarNavBtnRound}>
+              <Text style={styles.calendarNavArrow}>‹</Text>
+            </TouchableOpacity>
+            <Text style={styles.calendarMonthText}>{currentMonthLabel}</Text>
+            <TouchableOpacity onPress={nextMonth} style={styles.calendarNavBtnRound}>
+              <Text style={styles.calendarNavArrow}>›</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => nextYear(1)} style={styles.calendarNavBtn}>
+              <Text style={styles.calendarNavBtnText}>+1 वर्ष »</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Weekday labels */}
+          <View style={styles.calendarWeekRow}>
+            {weekDaysHi.map(d => (
+              <Text key={d} style={styles.calendarWeekText}>{d}</Text>
+            ))}
+          </View>
+
+          {/* Days Grid */}
+          <View style={styles.calendarGrid}>
+            {blanks.map(b => (
+              <View key={'b-' + b} style={styles.calendarDayCell} />
+            ))}
+            {days.map(d => {
+              const selected = isSelected(d);
+              const todayMark = isToday(d);
+              return (
+                <TouchableOpacity
+                  key={'d-' + d}
+                  style={[
+                    styles.calendarDayCell,
+                    selected && styles.calendarDaySelected,
+                    todayMark && !selected && styles.calendarDayToday
+                  ]}
+                  onPress={() => {
+                    const picked = new Date(calendarViewYear, calendarViewMonth, d);
+                    setCalendarSelectedDate(picked);
+                  }}
+                >
+                  <Text
+                    style={[
+                      styles.calendarDayText,
+                      selected && styles.calendarDayTextSelected,
+                      todayMark && !selected && styles.calendarDayTextToday
+                    ]}
+                  >
+                    {d}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+
+          {/* Quick jump chips */}
+          <View style={styles.calendarQuickRow}>
+            <TouchableOpacity
+              style={styles.calendarQuickChip}
+              onPress={() => {
+                const now = new Date();
+                setCalendarSelectedDate(now);
+                setCalendarViewYear(now.getFullYear());
+                setCalendarViewMonth(now.getMonth());
+              }}
+            >
+              <Text style={styles.calendarQuickChipText}>आज (Today)</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.calendarQuickChip}
+              onPress={() => {
+                const tmrw = new Date();
+                tmrw.setDate(tmrw.getDate() + 1);
+                setCalendarSelectedDate(tmrw);
+                setCalendarViewYear(tmrw.getFullYear());
+                setCalendarViewMonth(tmrw.getMonth());
+              }}
+            >
+              <Text style={styles.calendarQuickChipText}>कल (Tomorrow)</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.calendarQuickChip}
+              onPress={() => {
+                const n1y = new Date(calendarSelectedDate);
+                n1y.setFullYear(n1y.getFullYear() + 1);
+                setCalendarSelectedDate(n1y);
+                setCalendarViewYear(n1y.getFullYear());
+                setCalendarViewMonth(n1y.getMonth());
+              }}
+            >
+              <Text style={styles.calendarQuickChipText}>+1 वर्ष</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.calendarQuickChip}
+              onPress={() => {
+                const n5y = new Date(calendarSelectedDate);
+                n5y.setFullYear(n5y.getFullYear() + 5);
+                setCalendarSelectedDate(n5y);
+                setCalendarViewYear(n5y.getFullYear());
+                setCalendarViewMonth(n5y.getMonth());
+              }}
+            >
+              <Text style={styles.calendarQuickChipText}>+5 वर्ष</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Selection Confirmation Bar */}
+          <View style={styles.calendarActionRow}>
+            <TouchableOpacity style={styles.calendarCancelBtn} onPress={closeCalendar}>
+              <Text style={styles.calendarCancelBtnText}>{lang === 'hi' ? 'रद्द करें' : 'Cancel'}</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.calendarConfirmBtn}
+              onPress={() => applySelectedDate(calendarSelectedDate)}
+            >
+              <Text style={styles.calendarConfirmBtnText}>
+                ✓ {lang === 'hi' ? 'तारीख सेट करें' : 'Set Date'} ({calendarSelectedDate.getDate()}/{calendarSelectedDate.getMonth() + 1}/{calendarSelectedDate.getFullYear()})
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    );
+  };
+
   const handleAddNewMedicine = async () => {
     if (!newMedName.trim()) {
       Alert.alert('Notice', lang === 'hi' ? 'कृपया दवाई का नाम लिखें' : 'Please enter medicine name');
@@ -2854,6 +3124,7 @@ export default function App() {
       lockerEn: newGoldLocker,
       jewellerHi: newGoldJeweller || 'ज्वेलर',
       jewellerEn: newGoldJeweller || 'Jeweller',
+      purchaseDate: newGoldDate,
       imageUri: newGoldPhoto
     };
     await saveGold([...goldItems, newG]);
@@ -2861,6 +3132,7 @@ export default function App() {
     setNewGoldWeight('');
     setNewGoldValue('');
     setNewGoldJeweller('');
+    setNewGoldDate('');
     setNewGoldPhoto(null);
     setIsAddGoldModalOpen(false);
     Alert.alert(lang === 'hi' ? 'सफल' : 'Success', lang === 'hi' ? 'स्वर्ण संचय में नया आभूषण सेव हो गया!' : 'Jewellery added to vault!');
@@ -2882,11 +3154,13 @@ export default function App() {
       titleHi: newDocTitle.trim(),
       titleEn: newDocTitle.trim(),
       docNo: newDocNumber || 'DOC-XXXX-001',
+      expiry: newDocExpiry,
       imageUri: newDocPhoto
     };
     await saveDocs([...familyDocs, newD]);
     setNewDocTitle('');
     setNewDocNumber('');
+    setNewDocExpiry('');
     setNewDocPhoto(null);
     setIsAddDocModalOpen(false);
     Alert.alert(lang === 'hi' ? 'सफल' : 'Success', lang === 'hi' ? 'दस्तावेज़ लॉकर में सुरक्षित हो गया!' : 'Document saved to vault!');
@@ -2926,11 +3200,12 @@ export default function App() {
       titleEn: newExpTitle.trim(),
       amount: amt,
       category: newExpCategory,
-      date: 'आज'
+      date: newExpDate || (lang === 'hi' ? 'आज' : 'Today')
     };
     await saveExpenses([newExp, ...expenses]);
     setNewExpTitle('');
     setNewExpAmount('');
+    setNewExpDate('आज');
     setIsAddExpenseModalOpen(false);
     Alert.alert(lang === 'hi' ? 'सफल' : 'Success', lang === 'hi' ? 'घरेलू खर्च जुड़ गया!' : 'Expense added!');
   };
@@ -2947,6 +3222,7 @@ export default function App() {
       relationEn: newMemberRelation,
       phone: newMemberPhone || '98XXXXXXXX',
       age: newMemberAge || '25',
+      dob: newMemberDob,
       avatar: newMemberAvatar,
       role: 'Family Member'
     };
@@ -2954,6 +3230,7 @@ export default function App() {
     setNewMemberName('');
     setNewMemberPhone('');
     setNewMemberAge('');
+    setNewMemberDob('');
     setIsAddMemberModalOpen(false);
     Alert.alert(lang === 'hi' ? 'सफल' : 'Success', lang === 'hi' ? 'परिवार में नया सदस्य जुड़ गया!' : 'Family member added!');
   };
@@ -2970,9 +3247,10 @@ export default function App() {
       contentHi: newDiaryContent.trim(),
       contentEn: newDiaryContent.trim(),
       type: newDiaryType,
-      date: lang === 'hi' ? 'आज' : 'Today'
+      date: newDiaryDate || (lang === 'hi' ? 'आज' : 'Today')
     };
     await saveDiary([newEntry, ...diaryEntries]);
+    setNewDiaryDate('आज');
     setNewDiaryTitle('');
     setNewDiaryContent('');
     setIsAddDiaryModalOpen(false);
@@ -4839,13 +5117,21 @@ export default function App() {
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.inputLabel}>{t.warrantyPrompt}</Text>
-                  <TextInput 
-                    style={styles.formInput} 
-                    placeholder="15 Oct 2027" 
-                    placeholderTextColor="#94a3b8"
-                    value={newVaultWarranty} 
-                    onChangeText={setNewVaultWarranty} 
-                  />
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                    <TextInput 
+                      style={[styles.formInput, { flex: 1 }]} 
+                      placeholder="15 Oct 2027" 
+                      placeholderTextColor="#94a3b8"
+                      value={newVaultWarranty} 
+                      onChangeText={setNewVaultWarranty} 
+                    />
+                    <TouchableOpacity 
+                      style={styles.calendarPickIconBtn}
+                      onPress={() => openCalendar('appliance', newVaultWarranty)}
+                    >
+                      <Text style={{ fontSize: 18 }}>📅</Text>
+                    </TouchableOpacity>
+                  </View>
                   <View style={{ flexDirection: 'row', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
                     {[
                       { label: '1 वर्ष', years: 1 },
@@ -4898,6 +5184,9 @@ export default function App() {
             </TouchableOpacity>
           </View>
         </View>
+
+        {/* Nested Universal Interactive Calendar Picker */}
+        {calendarTarget && renderCalendarCard()}
       </Modal>
 
       {/* ================= MODAL: ADD GOLD / SILVER ================= */}
@@ -4976,6 +5265,25 @@ export default function App() {
                 </View>
               </View>
 
+              <View>
+                <Text style={styles.inputLabel}>{lang === 'hi' ? 'खरीद की तारीख (वैकल्पिक)' : 'Purchase Date (Optional)'}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <TextInput 
+                    style={[styles.formInput, { flex: 1 }]} 
+                    placeholder={lang === 'hi' ? 'उदा: 10 Nov 2024' : 'e.g. 10 Nov 2024'} 
+                    placeholderTextColor="#94a3b8"
+                    value={newGoldDate} 
+                    onChangeText={setNewGoldDate} 
+                  />
+                  <TouchableOpacity 
+                    style={styles.calendarPickIconBtn}
+                    onPress={() => openCalendar('gold', newGoldDate)}
+                  >
+                    <Text style={{ fontSize: 18 }}>📅</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+
               <TouchableOpacity 
                 style={styles.photoUploadBtn} 
                 onPress={() => launchCameraScanner(t.snapGoldPhotoPrompt, (uri) => setNewGoldPhoto(uri))}
@@ -4995,6 +5303,9 @@ export default function App() {
             </TouchableOpacity>
           </View>
         </View>
+
+        {/* Nested Universal Interactive Calendar Picker */}
+        {calendarTarget && renderCalendarCard()}
       </Modal>
 
       {/* ================= MODAL: ADD DOCUMENT ================= */}
@@ -5051,6 +5362,25 @@ export default function App() {
                 onChangeText={setNewDocNumber} 
               />
 
+              <View>
+                <Text style={styles.inputLabel}>{lang === 'hi' ? 'दस्तावेज़ समाप्ति / नवीनीकरण तारीख (वैकल्पिक)' : 'Expiry / Renewal Date (Optional)'}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <TextInput 
+                    style={[styles.formInput, { flex: 1 }]} 
+                    placeholder={lang === 'hi' ? 'उदा: 25 Dec 2030' : 'e.g. 25 Dec 2030'} 
+                    placeholderTextColor="#94a3b8"
+                    value={newDocExpiry} 
+                    onChangeText={setNewDocExpiry} 
+                  />
+                  <TouchableOpacity 
+                    style={styles.calendarPickIconBtn}
+                    onPress={() => openCalendar('doc', newDocExpiry)}
+                  >
+                    <Text style={{ fontSize: 18 }}>📅</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+
               <TouchableOpacity 
                 style={styles.photoUploadBtn} 
                 onPress={() => launchCameraScanner(t.snapDocPhoto, (uri) => setNewDocPhoto(uri))}
@@ -5070,6 +5400,9 @@ export default function App() {
             </TouchableOpacity>
           </View>
         </View>
+
+        {/* Nested Universal Interactive Calendar Picker */}
+        {calendarTarget && renderCalendarCard()}
       </Modal>
 
       {/* ================= MODAL: ADD BILL / REMINDER ================= */}
@@ -5107,13 +5440,21 @@ export default function App() {
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.inputLabel}>{t.remDatePrompt}</Text>
-                  <TextInput 
-                    style={styles.formInput} 
-                    placeholder="05 Nov" 
-                    placeholderTextColor="#94a3b8"
-                    value={newRemDate} 
-                    onChangeText={setNewRemDate} 
-                  />
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                    <TextInput 
+                      style={[styles.formInput, { flex: 1 }]} 
+                      placeholder="05 Nov" 
+                      placeholderTextColor="#94a3b8"
+                      value={newRemDate} 
+                      onChangeText={setNewRemDate} 
+                    />
+                    <TouchableOpacity 
+                      style={styles.calendarPickIconBtn}
+                      onPress={() => openCalendar('reminder', newRemDate)}
+                    >
+                      <Text style={{ fontSize: 18 }}>📅</Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
               </View>
 
@@ -5133,6 +5474,9 @@ export default function App() {
             </TouchableOpacity>
           </View>
         </View>
+
+        {/* Nested Universal Interactive Calendar Picker */}
+        {calendarTarget && renderCalendarCard()}
       </Modal>
 
       {/* ================= MODAL: ADD EXPENSE ================= */}
@@ -5156,15 +5500,37 @@ export default function App() {
                 onChangeText={setNewExpTitle} 
               />
 
-              <Text style={styles.inputLabel}>{t.expAmountPrompt}</Text>
-              <TextInput 
-                style={styles.formInput} 
-                placeholder="1500" 
-                placeholderTextColor="#94a3b8"
-                keyboardType="numeric"
-                value={newExpAmount} 
-                onChangeText={setNewExpAmount} 
-              />
+              <View style={{ flexDirection: 'row', gap: 10 }}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.inputLabel}>{t.expAmountPrompt}</Text>
+                  <TextInput 
+                    style={styles.formInput} 
+                    placeholder="1500" 
+                    placeholderTextColor="#94a3b8"
+                    keyboardType="numeric"
+                    value={newExpAmount} 
+                    onChangeText={setNewExpAmount} 
+                  />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.inputLabel}>{lang === 'hi' ? 'खर्च की तारीख' : 'Expense Date'}</Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                    <TextInput 
+                      style={[styles.formInput, { flex: 1 }]} 
+                      placeholder="आज" 
+                      placeholderTextColor="#94a3b8"
+                      value={newExpDate} 
+                      onChangeText={setNewExpDate} 
+                    />
+                    <TouchableOpacity 
+                      style={styles.calendarPickIconBtn}
+                      onPress={() => openCalendar('expense', newExpDate)}
+                    >
+                      <Text style={{ fontSize: 18 }}>📅</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              </View>
 
               <Text style={styles.inputLabel}>{lang === 'hi' ? 'श्रेणी (Category)' : 'Category'}</Text>
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
@@ -5190,6 +5556,9 @@ export default function App() {
             </TouchableOpacity>
           </View>
         </View>
+
+        {/* Nested Universal Interactive Calendar Picker */}
+        {calendarTarget && renderCalendarCard()}
       </Modal>
 
       {/* ================= MODAL: ADD FAMILY MEMBER ================= */}
@@ -5226,14 +5595,27 @@ export default function App() {
                 </View>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.inputLabel}>{t.memberAgePrompt}</Text>
-                  <TextInput 
-                    style={styles.formInput} 
-                    placeholder="25" 
-                    placeholderTextColor="#94a3b8"
-                    keyboardType="numeric"
-                    value={newMemberAge} 
-                    onChangeText={setNewMemberAge} 
-                  />
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                    <TextInput 
+                      style={[styles.formInput, { flex: 1 }]} 
+                      placeholder="25" 
+                      placeholderTextColor="#94a3b8"
+                      keyboardType="numeric"
+                      value={newMemberAge} 
+                      onChangeText={setNewMemberAge} 
+                    />
+                    <TouchableOpacity 
+                      style={styles.calendarPickIconBtn}
+                      onPress={() => openCalendar('member', newMemberDob)}
+                    >
+                      <Text style={{ fontSize: 18 }}>📅</Text>
+                    </TouchableOpacity>
+                  </View>
+                  {newMemberDob ? (
+                    <Text style={{ fontSize: 10, color: '#64748b', marginTop: 2 }}>
+                      🎂 {newMemberDob}
+                    </Text>
+                  ) : null}
                 </View>
               </View>
 
@@ -5266,6 +5648,9 @@ export default function App() {
             </TouchableOpacity>
           </View>
         </View>
+
+        {/* Nested Universal Interactive Calendar Picker */}
+        {calendarTarget && renderCalendarCard()}
       </Modal>
 
       {/* ================= MODAL: ADD DIARY ================= */}
@@ -5295,6 +5680,25 @@ export default function App() {
                 </TouchableOpacity>
               </View>
 
+              <View>
+                <Text style={styles.inputLabel}>{lang === 'hi' ? 'डायरी प्रविष्टि तारीख' : 'Diary Entry Date'}</Text>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <TextInput 
+                    style={[styles.formInput, { flex: 1 }]} 
+                    placeholder="आज" 
+                    placeholderTextColor="#94a3b8"
+                    value={newDiaryDate} 
+                    onChangeText={setNewDiaryDate} 
+                  />
+                  <TouchableOpacity 
+                    style={styles.calendarPickIconBtn}
+                    onPress={() => openCalendar('diary', newDiaryDate)}
+                  >
+                    <Text style={{ fontSize: 18 }}>📅</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+
               <Text style={styles.inputLabel}>{t.titlePrompt}</Text>
               <TextInput 
                 style={styles.formInput} 
@@ -5320,6 +5724,9 @@ export default function App() {
             </TouchableOpacity>
           </View>
         </View>
+
+        {/* Nested Universal Interactive Calendar Picker */}
+        {calendarTarget && renderCalendarCard()}
       </Modal>
 
       {/* ================= MODAL: DOCTOR RX SLIP ================= */}
@@ -6169,6 +6576,189 @@ const styles = StyleSheet.create({
   photoUploadBtn: { backgroundColor: '#f0fdf4', paddingVertical: 12, borderRadius: 12, borderWidth: 1, borderColor: '#86efac', alignItems: 'center', marginTop: 6 },
   photoUploadBtnText: { color: '#16a34a', fontSize: 13, fontWeight: 'bold' },
   saveSubmitBtn: { backgroundColor: '#059669', paddingVertical: 14, borderRadius: 14, alignItems: 'center', marginTop: 14 },
+  calendarPickIconBtn: {
+    backgroundColor: '#fff7ed',
+    borderWidth: 1,
+    borderColor: '#fed7aa',
+    borderRadius: 10,
+    width: 44,
+    height: 44,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  calendarModalOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(15, 23, 42, 0.8)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 16,
+    zIndex: 99999,
+    elevation: 30,
+  },
+  calendarCard: {
+    width: '100%',
+    maxWidth: 380,
+    backgroundColor: '#ffffff',
+    borderRadius: 22,
+    padding: 18,
+    shadowColor: '#000',
+    shadowOpacity: 0.25,
+    shadowOffset: { width: 0, height: 10 },
+    shadowRadius: 20,
+    elevation: 12,
+  },
+  calendarHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: '#f1f5f9',
+    paddingBottom: 10,
+    marginBottom: 12,
+  },
+  calendarCardTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#0f172a',
+  },
+  calendarNavRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 12,
+  },
+  calendarNavBtn: {
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    backgroundColor: '#f1f5f9',
+    borderRadius: 8,
+  },
+  calendarNavBtnText: {
+    fontSize: 11,
+    fontWeight: 'bold',
+    color: '#475569',
+  },
+  calendarNavBtnRound: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#fff7ed',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  calendarNavArrow: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#ea580c',
+  },
+  calendarMonthText: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#0f172a',
+  },
+  calendarWeekRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f8fafc',
+    paddingBottom: 4,
+  },
+  calendarWeekText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#94a3b8',
+    width: '14.28%',
+    textAlign: 'center',
+  },
+  calendarGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  },
+  calendarDayCell: {
+    width: '14.28%',
+    aspectRatio: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 12,
+    marginVertical: 2,
+  },
+  calendarDaySelected: {
+    backgroundColor: '#ea580c',
+  },
+  calendarDayToday: {
+    borderWidth: 1.5,
+    borderColor: '#ea580c',
+    backgroundColor: '#fff7ed',
+  },
+  calendarDayText: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#1e293b',
+  },
+  calendarDayTextSelected: {
+    color: '#ffffff',
+    fontWeight: 'bold',
+  },
+  calendarDayTextToday: {
+    color: '#ea580c',
+    fontWeight: 'bold',
+  },
+  calendarQuickRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+    marginVertical: 12,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#f1f5f9',
+  },
+  calendarQuickChip: {
+    backgroundColor: '#f8fafc',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  calendarQuickChipText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: '#475569',
+  },
+  calendarActionRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 6,
+  },
+  calendarCancelBtn: {
+    flex: 1,
+    backgroundColor: '#f1f5f9',
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  calendarCancelBtnText: {
+    fontSize: 13,
+    fontWeight: 'bold',
+    color: '#64748b',
+  },
+  calendarConfirmBtn: {
+    flex: 2,
+    backgroundColor: '#ea580c',
+    paddingVertical: 12,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  calendarConfirmBtnText: {
+    fontSize: 13,
+    fontWeight: 'bold',
+    color: '#ffffff',
+  },
   saveSubmitBtnText: { color: '#fff', fontSize: 15, fontWeight: 'bold' },
   rxSlipContainer: { backgroundColor: '#fff1f2', borderRadius: 18, padding: 16, borderWidth: 1, borderColor: '#fecdd3', marginVertical: 14 },
   rxDocName: { fontSize: 15, fontWeight: 'bold', color: '#9f1239' },
