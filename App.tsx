@@ -109,6 +109,15 @@ const TRANSLATION_MAP: Record<string, { hi: string; en: string }> = {
   'आज शाम की चाय पर सबको साथ बैठना है।': { hi: 'आज शाम की चाय पर सबको साथ बैठना है।', en: 'Everyone join for evening tea together today.' },
   'हाँ, मैंने पकौड़े बनाने की तैयारी कर ली है! 😊': { hi: 'हाँ, मैंने पकौड़े बनाने की तैयारी कर ली है! 😊', en: 'Yes, snacks are ready! 😊' },
 
+  // Common Alerts & Statuses
+  '10 दिन का कोर्स पूरा': { hi: '10 दिन का कोर्स पूरा', en: '10-day course completed' },
+  'कल दवा खत्म होगी': { hi: 'कल दवा खत्म होगी', en: 'Finishes tomorrow' },
+  'दवा खत्म होने वाली है': { hi: 'दवा खत्म होने वाली है', en: 'Medicine finishing' },
+  'आज': { hi: 'आज', en: 'Today' },
+  'कल': { hi: 'कल', en: 'Tomorrow' },
+  'रिया (गुड़िया)': { hi: 'रिया (गुड़िया)', en: 'Riya' },
+  'आरव (छोटू)': { hi: 'आरव (छोटू)', en: 'Aarav' },
+
   // Diary
   'उम्मीद की किरण': { hi: 'उम्मीद की किरण', en: 'Ray of Hope' },
   'थक कर न बैठ ऐ मुसाफिर, मंज़िल करीब आएगी,\nआज की यह रात ढलेगी, कल फिर नई सुबह मुस्कुराएगी।\nअपने हौसलों पर यकीन रख, हर मुश्किल आसान हो जाएगी।': {
@@ -3350,7 +3359,11 @@ export default function App() {
       'January', 'February', 'March', 'April', 'May', 'June',
       'July', 'August', 'September', 'October', 'November', 'December'
     ];
+    const activeMonthNames = lang === 'hi' ? monthNamesHi : monthNamesEn;
+
     const weekDaysHi = ['रवि', 'सोम', 'मंगल', 'बुध', 'गुरु', 'शुक्र', 'शनि'];
+    const weekDaysEn = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+    const activeWeekDays = lang === 'hi' ? weekDaysHi : weekDaysEn;
 
     const prevMonth = () => {
       if (calendarViewMonth === 0) {
@@ -3444,7 +3457,7 @@ export default function App() {
                 onPress={() => setCalendarPickerMode(calendarPickerMode === 'month' ? 'day' : 'month')}
               >
                 <Text style={[styles.calendarModeSelectorText, calendarPickerMode === 'month' && styles.calendarModeSelectorTextActive]}>
-                  {monthNamesHi[calendarViewMonth]} ▼
+                  {activeMonthNames[calendarViewMonth]} ▼
                 </Text>
               </TouchableOpacity>
 
@@ -3530,7 +3543,7 @@ export default function App() {
                 {lang === 'hi' ? 'महीना चुनें:' : 'Select Month:'}
               </Text>
               <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, justifyContent: 'center' }}>
-                {monthNamesHi.map((mName, mIdx) => {
+                {activeMonthNames.map((mName, mIdx) => {
                   const isCurrentMonth = mIdx === calendarViewMonth;
                   return (
                     <TouchableOpacity
@@ -3557,7 +3570,7 @@ export default function App() {
             <View {...panResponder.panHandlers}>
               {/* Weekday labels */}
               <View style={styles.calendarWeekRow}>
-                {weekDaysHi.map(d => (
+                {activeWeekDays.map(d => (
                   <Text key={d} style={styles.calendarWeekText}>{d}</Text>
                 ))}
               </View>
@@ -3611,7 +3624,7 @@ export default function App() {
                 setCalendarPickerMode('day');
               }}
             >
-              <Text style={styles.calendarQuickChipText}>आज (Today)</Text>
+              <Text style={styles.calendarQuickChipText}>{lang === 'hi' ? 'आज (Today)' : 'Today'}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.calendarQuickChip}
@@ -3624,7 +3637,7 @@ export default function App() {
                 setCalendarPickerMode('day');
               }}
             >
-              <Text style={styles.calendarQuickChipText}>कल (Tomorrow)</Text>
+              <Text style={styles.calendarQuickChipText}>{lang === 'hi' ? 'कल (Tomorrow)' : 'Tomorrow'}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.calendarQuickChip}
@@ -3637,7 +3650,7 @@ export default function App() {
                 setCalendarPickerMode('day');
               }}
             >
-              <Text style={styles.calendarQuickChipText}>+1 वर्ष</Text>
+              <Text style={styles.calendarQuickChipText}>{lang === 'hi' ? '+1 वर्ष' : '+1 Year'}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.calendarQuickChip}
@@ -3650,7 +3663,7 @@ export default function App() {
                 setCalendarPickerMode('day');
               }}
             >
-              <Text style={styles.calendarQuickChipText}>+5 वर्ष</Text>
+              <Text style={styles.calendarQuickChipText}>{lang === 'hi' ? '+5 वर्ष' : '+5 Years'}</Text>
             </TouchableOpacity>
           </View>
 
@@ -4242,7 +4255,13 @@ export default function App() {
       >
 
         {/* ----------------- 1. HOME SCREEN (CLEAN, DYNAMIC DAY + DATE, RECENT EXPENSES) ----------------- */}
-        <ScrollView style={{ width: SCREEN_WIDTH }} contentContainerStyle={styles.scrollBody} showsVerticalScrollIndicator={false}>
+        <ScrollView 
+          style={{ width: SCREEN_WIDTH }} 
+          contentContainerStyle={styles.scrollBody} 
+          showsVerticalScrollIndicator={false}
+          nestedScrollEnabled={true}
+          keyboardShouldPersistTaps="handled"
+        >
           <View style={{ gap: 16 }}>
 
             {/* Hero Card with Dynamic Day + Date */}
@@ -4461,7 +4480,7 @@ export default function App() {
                         </View>
 
                         <View style={{ alignItems: 'flex-end' }}>
-                          <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#c2410c' }}>{item.amount}</Text>
+                          <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#c2410c' }}>{lang === 'en' && item.amountEn ? item.amountEn : tr(item.amount)}</Text>
                           <TouchableOpacity
                             style={{ backgroundColor: '#ea580c', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6, marginTop: 4 }}
                             onPress={() => toggleReminderPaid(item.id)}
@@ -4554,11 +4573,19 @@ export default function App() {
               </View>
             </View>
 
+            {/* Bottom spacer so content is never cut off by bottom nav */}
+            <View style={{ height: 40 }} />
           </View>
         </ScrollView>
 
         {/* ----------------- 2. VAULT (लॉकर: APPLIANCES, AUTO-GOLD, FILTERED DOCS) ----------------- */}
-        <ScrollView style={{ width: SCREEN_WIDTH }} contentContainerStyle={styles.scrollBody} showsVerticalScrollIndicator={false}>
+        <ScrollView 
+          style={{ width: SCREEN_WIDTH }} 
+          contentContainerStyle={styles.scrollBody} 
+          showsVerticalScrollIndicator={false}
+          nestedScrollEnabled={true}
+          keyboardShouldPersistTaps="handled"
+        >
           <View style={{ gap: 16 }}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
               <View style={{ flex: 1, marginRight: 8 }}>
@@ -4827,11 +4854,19 @@ export default function App() {
                 )}
               </View>
             )}
+            {/* Bottom spacer so content is never cut off by bottom nav */}
+            <View style={{ height: 40 }} />
           </View>
         </ScrollView>
 
         {/* ----------------- 3. REMINDERS & MEDICINE (WITH ALARMS & CHECKBOX REMINDERS) ----------------- */}
-        <ScrollView style={{ width: SCREEN_WIDTH }} contentContainerStyle={styles.scrollBody} showsVerticalScrollIndicator={false}>
+        <ScrollView 
+          style={{ width: SCREEN_WIDTH }} 
+          contentContainerStyle={styles.scrollBody} 
+          showsVerticalScrollIndicator={false}
+          nestedScrollEnabled={true}
+          keyboardShouldPersistTaps="handled"
+        >
           <View style={{ gap: 16 }}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
               <View>
@@ -4984,7 +5019,7 @@ export default function App() {
                       
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                         <Text style={[styles.priceBadge, isPaid && styles.strike, { color: rem.urgent && !isPaid ? '#e11d48' : '#0f172a' }]}>
-                          {rem.amount}
+                          {lang === 'en' && rem.amountEn ? rem.amountEn : tr(rem.amount)}
                         </Text>
                         <TouchableOpacity onPress={() => openEditReminderModal(rem)} style={{ padding: 4 }}>
                           <Text style={{ fontSize: 15 }}>✏️</Text>
@@ -5012,11 +5047,19 @@ export default function App() {
               })
               )}
             </View>
+            {/* Bottom spacer so content is never cut off by bottom nav */}
+            <View style={{ height: 40 }} />
           </View>
         </ScrollView>
 
         {/* ----------------- 4. PAN-INDIA SCHOOL BUS TRACKER (MULTI-CHILD, GOOGLE MAPS & ZERO-BURDEN DRIVER) ----------------- */}
-        <ScrollView style={{ width: SCREEN_WIDTH }} contentContainerStyle={styles.scrollBody} showsVerticalScrollIndicator={false}>
+        <ScrollView 
+          style={{ width: SCREEN_WIDTH }} 
+          contentContainerStyle={styles.scrollBody} 
+          showsVerticalScrollIndicator={false}
+          nestedScrollEnabled={true}
+          keyboardShouldPersistTaps="handled"
+        >
           <View style={{ gap: 16 }}>
             <View style={styles.pageHeader}>
               <Text style={styles.pageTitle}>🚌 {t.busHeading}</Text>
@@ -5090,7 +5133,7 @@ export default function App() {
                           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
                             <Text style={{ fontSize: 22 }}>{child.avatar}</Text>
                             <View>
-                              <Text style={[styles.childTabName, isSelected && { color: '#fff' }]}>{child.name}</Text>
+                              <Text style={[styles.childTabName, isSelected && { color: '#fff' }]}>{(lang === 'en' && child.nameEn) ? child.nameEn : child.name}</Text>
                               <Text style={[styles.childTabSub, isSelected && { color: '#fed7aa' }]}>{schoolName} • {child.busNo}</Text>
                             </View>
                           </View>
@@ -5111,7 +5154,7 @@ export default function App() {
                     </View>
                     <View style={{ flex: 1 }}>
                       <Text style={{ fontSize: 15, fontWeight: 'bold', color: '#0f172a' }}>
-                        {activeChild.name} ({activeChild.grade})
+                        {(lang === 'en' && activeChild.nameEn) ? activeChild.nameEn : activeChild.name} ({activeChild.grade})
                       </Text>
                       <Text style={{ fontSize: 12, color: '#64748b', marginTop: 1 }}>
                         🏫 {lang === 'hi' ? activeChild.schoolNameHi : activeChild.schoolNameEn}
@@ -5137,7 +5180,7 @@ export default function App() {
                         {(activeChild.schoolFee || activeChild.busFee) ? (
                           <View style={{ backgroundColor: '#fff7ed', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, borderWidth: 1, borderColor: '#fed7aa' }}>
                             <Text style={{ fontSize: 10, color: '#c2410c', fontWeight: 'bold' }}>
-                              💳 {activeChild.schoolFee ? `स्कूल: ${activeChild.schoolFee}` : ''} {activeChild.busFee ? `| बस: ${activeChild.busFee}` : ''}
+                              💳 {activeChild.schoolFee ? `${lang === 'hi' ? 'स्कूल' : 'School'}: ${activeChild.schoolFee}` : ''} {activeChild.busFee ? `| ${lang === 'hi' ? 'बस' : 'Bus'}: ${activeChild.busFee}` : ''}
                             </Text>
                           </View>
                         ) : null}
@@ -5709,7 +5752,7 @@ export default function App() {
                             📍 {driverLoggedInBus.district || driverDistrict}, {driverLoggedInBus.state || driverState}
                           </Text>
                           <Text style={{ color: '#cbd5e1', fontSize: 11, marginTop: 2 }}>
-                            👤 चालक: {driverLoggedInBus.driverName} • 📞 {driverLoggedInBus.driverPhone}
+                            👤 {lang === 'hi' ? 'चालक:' : 'Driver:'} {driverLoggedInBus.driverName} • 📞 {driverLoggedInBus.driverPhone}
                           </Text>
                         </View>
                         
@@ -5796,7 +5839,7 @@ export default function App() {
                             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
                               <Text style={{ fontSize: 24 }}>{kid.avatar}</Text>
                               <View>
-                                <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#0f172a' }}>{kid.name}</Text>
+                                <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#0f172a' }}>{(lang === 'en' && kid.nameEn) ? kid.nameEn : kid.name}</Text>
                                 <Text style={{ fontSize: 11, color: '#64748b' }}>{kid.grade} • {kid.busNo}</Text>
                               </View>
                             </View>
@@ -5823,11 +5866,19 @@ export default function App() {
                 )}
               </View>
             )}
+            {/* Bottom spacer so content is never cut off by bottom nav */}
+            <View style={{ height: 40 }} />
           </View>
         </ScrollView>
 
         {/* ----------------- 5. DIARY (FILTERABLE WITH DELETE) ----------------- */}
-        <ScrollView style={{ width: SCREEN_WIDTH }} contentContainerStyle={styles.scrollBody} showsVerticalScrollIndicator={false}>
+        <ScrollView 
+          style={{ width: SCREEN_WIDTH }} 
+          contentContainerStyle={styles.scrollBody} 
+          showsVerticalScrollIndicator={false}
+          nestedScrollEnabled={true}
+          keyboardShouldPersistTaps="handled"
+        >
           <View style={{ gap: 16 }}>
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
               <View>
@@ -5924,11 +5975,19 @@ export default function App() {
                 </View>
               );
             })()}
+            {/* Bottom spacer so content is never cut off by bottom nav */}
+            <View style={{ height: 40 }} />
           </View>
         </ScrollView>
 
         {/* ----------------- 6. FAMILY CONNECT (CLOUD-SYNCED INTERCOM, DIRECTORY & CHAT) ----------------- */}
-        <ScrollView style={{ width: SCREEN_WIDTH }} contentContainerStyle={styles.scrollBody} showsVerticalScrollIndicator={false}>
+        <ScrollView 
+          style={{ width: SCREEN_WIDTH }} 
+          contentContainerStyle={styles.scrollBody} 
+          showsVerticalScrollIndicator={false}
+          nestedScrollEnabled={true}
+          keyboardShouldPersistTaps="handled"
+        >
           <View style={{ gap: 16 }}>
             <View style={styles.pageHeader}>
               <Text style={styles.pageTitle}>👨‍👩‍👧‍👦 {t.famHeading}</Text>
@@ -6146,6 +6205,8 @@ export default function App() {
                 </TouchableOpacity>
               </View>
             </View>
+            {/* Bottom spacer so content is never cut off by bottom nav */}
+            <View style={{ height: 60 }} />
           </View>
         </ScrollView>
 
@@ -6204,6 +6265,7 @@ export default function App() {
               </TouchableOpacity>
             </View>
 
+            <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: 24 }}>
             <View style={{ gap: 12, marginVertical: 14 }}>
               {/* Member / Patient Selector */}
               <View>
@@ -6212,9 +6274,9 @@ export default function App() {
                 </Text>
                 <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6, marginVertical: 4 }}>
                   {[
-                    ...(userProfile?.name ? [`${userProfile.name} (स्वयं)`] : ['स्वयं (Self)']),
+                    ...(userProfile?.name ? [`${userProfile.name} (${lang === 'hi' ? 'स्वयं' : 'Self'})`] : [lang === 'hi' ? 'स्वयं (Self)' : 'Self']),
                     ...familyMembers.map((m: any) => m.name || m.nameHi || m.nameEn).filter(Boolean),
-                    'दादाजी', 'दादीजी', 'पिताजी', 'माताजी', 'बच्चे'
+                    ...(lang === 'hi' ? ['दादाजी', 'दादीजी', 'पिताजी', 'माताजी', 'बच्चे'] : ['Grandfather', 'Grandmother', 'Father', 'Mother', 'Children'])
                   ].filter((v, i, a) => a.indexOf(v) === i).map((person) => (
                     <TouchableOpacity
                       key={person}
@@ -6266,7 +6328,7 @@ export default function App() {
                     onChangeText={setNewMedDose} 
                   />
                   <View style={{ flexDirection: 'row', gap: 4, marginTop: 4, flexWrap: 'wrap' }}>
-                    {['1 गोली खाने बाद', '1 गोली खाली पेट', '2 गोली'].map(ch => (
+                    {(lang === 'hi' ? ['1 गोली खाने बाद', '1 गोली खाली पेट', '2 गोली'] : ['1 pill after meal', '1 pill empty stomach', '2 pills']).map(ch => (
                       <TouchableOpacity
                         key={ch}
                         style={[styles.chip, { paddingVertical: 3, paddingHorizontal: 6 }]}
@@ -6410,6 +6472,7 @@ export default function App() {
             <TouchableOpacity style={styles.saveSubmitBtn} onPress={handleAddNewMedicine}>
               <Text style={styles.saveSubmitBtnText}>{editingMedId ? (lang === 'hi' ? '✓ बदलाव सुरक्षित करें' : '✓ Update Medicine') : t.saveMedBtn}</Text>
             </TouchableOpacity>
+            </ScrollView>
           </View>
         </View>
       </Modal>
@@ -6425,6 +6488,7 @@ export default function App() {
               </TouchableOpacity>
             </View>
 
+            <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: 24 }}>
             <View style={{ gap: 12, marginVertical: 14 }}>
               <Text style={styles.inputLabel}>{t.itemNamePrompt}</Text>
               <TextInput 
@@ -6466,10 +6530,10 @@ export default function App() {
                   </View>
                   <View style={{ flexDirection: 'row', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
                     {[
-                      { label: '1 वर्ष', years: 1 },
-                      { label: '2 वर्ष', years: 2 },
-                      { label: '5 वर्ष', years: 5 },
-                      { label: '10 वर्ष', years: 10 }
+                      { label: lang === 'hi' ? '1 वर्ष' : '1 Year', years: 1 },
+                      { label: lang === 'hi' ? '2 वर्ष' : '2 Years', years: 2 },
+                      { label: lang === 'hi' ? '5 वर्ष' : '5 Years', years: 5 },
+                      { label: lang === 'hi' ? '10 वर्ष' : '10 Years', years: 10 }
                     ].map(w => (
                       <TouchableOpacity
                         key={w.label}
@@ -6514,6 +6578,7 @@ export default function App() {
             <TouchableOpacity style={styles.saveSubmitBtn} onPress={handleAddNewAppliance}>
               <Text style={styles.saveSubmitBtnText}>{editingApplianceId ? (lang === 'hi' ? '✓ बदलाव सुरक्षित करें' : '✓ Update Appliance') : t.saveToVaultBtn}</Text>
             </TouchableOpacity>
+            </ScrollView>
           </View>
         </View>
       </Modal>
@@ -6529,6 +6594,7 @@ export default function App() {
               </TouchableOpacity>
             </View>
 
+            <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: 24 }}>
             <View style={{ gap: 12, marginVertical: 14 }}>
               <Text style={styles.inputLabel}>{t.goldTitlePrompt}</Text>
               <TextInput 
@@ -6630,6 +6696,7 @@ export default function App() {
             <TouchableOpacity style={styles.saveSubmitBtn} onPress={handleAddNewGold}>
               <Text style={styles.saveSubmitBtnText}>{editingGoldId ? (lang === 'hi' ? '✓ बदलाव सुरक्षित करें' : '✓ Update Jewellery') : t.saveGoldBtn}</Text>
             </TouchableOpacity>
+            </ScrollView>
           </View>
         </View>
       </Modal>
@@ -6645,6 +6712,7 @@ export default function App() {
               </TouchableOpacity>
             </View>
 
+            <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: 24 }}>
             <View style={{ gap: 12, marginVertical: 14 }}>
               <Text style={styles.inputLabel}>{t.docMemberPrompt}</Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8, paddingVertical: 4 }}>
@@ -6724,6 +6792,7 @@ export default function App() {
             <TouchableOpacity style={styles.saveSubmitBtn} onPress={handleAddNewDoc}>
               <Text style={styles.saveSubmitBtnText}>{editingDocId ? (lang === 'hi' ? '✓ बदलाव सुरक्षित करें' : '✓ Update Document') : t.saveDocBtn}</Text>
             </TouchableOpacity>
+            </ScrollView>
           </View>
         </View>
       </Modal>
@@ -6739,6 +6808,7 @@ export default function App() {
               </TouchableOpacity>
             </View>
 
+            <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: 24 }}>
             <View style={{ gap: 12, marginVertical: 14 }}>
               <Text style={styles.inputLabel}>{t.remTitlePrompt}</Text>
               <TextInput 
@@ -6795,6 +6865,7 @@ export default function App() {
             <TouchableOpacity style={styles.saveSubmitBtn} onPress={handleAddNewReminder}>
               <Text style={styles.saveSubmitBtnText}>{editingReminderId ? (lang === 'hi' ? '✓ बदलाव सुरक्षित करें' : '✓ Update Reminder') : t.saveReminderBtn}</Text>
             </TouchableOpacity>
+            </ScrollView>
           </View>
         </View>
       </Modal>
@@ -6810,6 +6881,7 @@ export default function App() {
               </TouchableOpacity>
             </View>
 
+            <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: 24 }}>
             <View style={{ gap: 12, marginVertical: 14 }}>
               <Text style={styles.inputLabel}>{t.expTitlePrompt}</Text>
               <TextInput 
@@ -6837,7 +6909,7 @@ export default function App() {
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                     <TextInput 
                       style={[styles.formInput, { flex: 1 }]} 
-                      placeholder="आज" 
+                      placeholder={lang === 'hi' ? "आज" : "Today"} 
                       placeholderTextColor="#94a3b8"
                       value={newExpDate} 
                       onChangeText={setNewExpDate} 
@@ -6874,6 +6946,7 @@ export default function App() {
             <TouchableOpacity style={styles.saveSubmitBtn} onPress={handleAddNewExpense}>
               <Text style={styles.saveSubmitBtnText}>{t.saveExpenseBtn}</Text>
             </TouchableOpacity>
+            </ScrollView>
           </View>
         </View>
       </Modal>
@@ -6889,6 +6962,7 @@ export default function App() {
               </TouchableOpacity>
             </View>
 
+            <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: 24 }}>
             <View style={{ gap: 12, marginVertical: 14 }}>
               <Text style={styles.inputLabel}>{t.memberNamePrompt}</Text>
               <TextInput 
@@ -6963,6 +7037,7 @@ export default function App() {
             <TouchableOpacity style={styles.saveSubmitBtn} onPress={handleAddNewMember}>
               <Text style={styles.saveSubmitBtnText}>{editingMemberId ? (lang === 'hi' ? '✓ बदलाव सुरक्षित करें' : '✓ Update Member') : t.saveMemberBtn}</Text>
             </TouchableOpacity>
+            </ScrollView>
           </View>
         </View>
       </Modal>
@@ -6978,6 +7053,7 @@ export default function App() {
               </TouchableOpacity>
             </View>
 
+            <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: 24 }}>
             <View style={{ gap: 12, marginVertical: 14 }}>
               <View style={{ flexDirection: 'row', gap: 10 }}>
                 <TouchableOpacity 
@@ -6999,7 +7075,7 @@ export default function App() {
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                   <TextInput 
                     style={[styles.formInput, { flex: 1 }]} 
-                    placeholder="आज" 
+                    placeholder={lang === 'hi' ? "आज" : "Today"} 
                     placeholderTextColor="#94a3b8"
                     value={newDiaryDate} 
                     onChangeText={setNewDiaryDate} 
@@ -7036,6 +7112,7 @@ export default function App() {
             <TouchableOpacity style={styles.saveSubmitBtn} onPress={handleAddNewDiary}>
               <Text style={styles.saveSubmitBtnText}>{editingDiaryId ? (lang === 'hi' ? '✓ बदलाव सुरक्षित करें' : '✓ Update Entry') : t.saveToDiaryBtn}</Text>
             </TouchableOpacity>
+            </ScrollView>
           </View>
         </View>
       </Modal>
@@ -7051,6 +7128,7 @@ export default function App() {
               </TouchableOpacity>
             </View>
 
+            <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: 24 }}>
             {selectedRx && (
               <View style={styles.rxSlipContainer}>
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
@@ -7104,6 +7182,7 @@ export default function App() {
             <TouchableOpacity style={styles.closeModalBtn} onPress={() => setIsRxModalOpen(false)}>
               <Text style={styles.closeModalBtnText}>{t.closeBtn}</Text>
             </TouchableOpacity>
+            </ScrollView>
           </View>
         </View>
       </Modal>
@@ -7132,19 +7211,19 @@ export default function App() {
                 style={[styles.sosActionBtn, { flex: 1, backgroundColor: '#0284c7' }]}
                 onPress={() => { Linking.openURL('tel:112'); setIsSOSModalOpen(false); }}
               >
-                <Text style={styles.sosActionBtnText}>📞 112 राष्ट्रीय</Text>
+                <Text style={styles.sosActionBtnText}>{lang === 'hi' ? '📞 112 राष्ट्रीय' : '📞 112 National'}</Text>
               </TouchableOpacity>
               <TouchableOpacity 
                 style={[styles.sosActionBtn, { flex: 1, backgroundColor: '#059669' }]}
                 onPress={() => { Linking.openURL('tel:108'); setIsSOSModalOpen(false); }}
               >
-                <Text style={styles.sosActionBtnText}>🚑 108 एम्बुलेंस</Text>
+                <Text style={styles.sosActionBtnText}>{lang === 'hi' ? '🚑 108 एम्बुलेंस' : '🚑 108 Ambulance'}</Text>
               </TouchableOpacity>
               <TouchableOpacity 
                 style={[styles.sosActionBtn, { flex: 1, backgroundColor: '#4338ca' }]}
                 onPress={() => { Linking.openURL('tel:100'); setIsSOSModalOpen(false); }}
               >
-                <Text style={styles.sosActionBtnText}>👮 100 पुलिस</Text>
+                <Text style={styles.sosActionBtnText}>{lang === 'hi' ? '👮 100 पुलिस' : '👮 100 Police'}</Text>
               </TouchableOpacity>
             </View>
 
@@ -7386,7 +7465,7 @@ export default function App() {
                       </TouchableOpacity>
                     </View>
                     <View style={{ flexDirection: 'row', gap: 6, marginTop: 4 }}>
-                      {['5 तारीख', '10 तारीख', '15 तारीख', '25 तारीख'].map(dStr => {
+                      {(lang === 'hi' ? ['5 तारीख', '10 तारीख', '15 तारीख', '25 तारीख'] : ['5th Date', '10th Date', '15th Date', '25th Date']).map(dStr => {
                         const num = dStr.replace(/[^0-9]/g, '');
                         return (
                           <TouchableOpacity
@@ -7402,15 +7481,15 @@ export default function App() {
                   </View>
                 </View>
               </View>
-            </ScrollView>
 
-            <TouchableOpacity style={styles.saveSubmitBtn} onPress={handleAddNewChild}>
-              <Text style={styles.saveSubmitBtnText}>
-                {editingChildId
-                  ? (lang === 'hi' ? '✓ बदलाव सुरक्षित करें' : '✓ Update Child & Bus')
-                  : (lang === 'hi' ? '💾 बच्चा व बस सुरक्षित सेव करें' : '💾 Save Child & Bus')}
-              </Text>
-            </TouchableOpacity>
+              <TouchableOpacity style={[styles.saveSubmitBtn, { marginTop: 16 }]} onPress={handleAddNewChild}>
+                <Text style={styles.saveSubmitBtnText}>
+                  {editingChildId
+                    ? (lang === 'hi' ? '✓ बदलाव सुरक्षित करें' : '✓ Update Child & Bus')
+                    : (lang === 'hi' ? '💾 बच्चा व बस सुरक्षित सेव करें' : '💾 Save Child & Bus')}
+                </Text>
+              </TouchableOpacity>
+            </ScrollView>
           </View>
         </View>
       </Modal>
@@ -7544,6 +7623,7 @@ export default function App() {
               </TouchableOpacity>
             </View>
 
+            <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: 20 }}>
             <Text style={{ fontSize: 13, color: '#64748b', marginTop: 6, lineHeight: 18 }}>
               {lang === 'hi'
                 ? 'अपने परिवार का मासिक खर्च लक्ष्य तय करें ताकि बचत व खर्च का सही प्रतिशत दिखे।'
@@ -7586,6 +7666,7 @@ export default function App() {
             >
               <Text style={styles.saveSubmitBtnText}>✓ {lang === 'hi' ? 'बजट सुरक्षित करें' : 'Save Budget'}</Text>
             </TouchableOpacity>
+            </ScrollView>
           </View>
         </View>
       </Modal>
@@ -7658,6 +7739,7 @@ export default function App() {
       <Modal visible={isOnboardingOpen && !isAppLocked} animationType="slide" transparent={true}>
         <View style={styles.modalBackdrop}>
           <View style={[styles.modalContent, { backgroundColor: '#fff', maxHeight: '90%' }]}>
+            <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: 24 }}>
             <View style={{ alignItems: 'center', marginBottom: 12 }}>
               <Text style={{ fontSize: 36 }}>✨</Text>
               <Text style={{ fontSize: 19, fontWeight: 'bold', color: '#0f172a', textAlign: 'center', marginTop: 4 }}>
@@ -7717,6 +7799,7 @@ export default function App() {
                 </Text>
               </TouchableOpacity>
             </View>
+            </ScrollView>
           </View>
         </View>
       </Modal>
@@ -7822,7 +7905,7 @@ const styles = StyleSheet.create({
   alertBannerTitle: { fontSize: 14, fontWeight: 'bold', color: '#0f172a' },
   alertBannerBody: { fontSize: 12, color: '#475569', marginTop: 2, lineHeight: 16 },
 
-  scrollBody: { padding: 16, paddingBottom: 110, backgroundColor: '#f8fafc' },
+  scrollBody: { padding: 16, paddingTop: 10, paddingBottom: 160, backgroundColor: '#f8fafc' },
   heroCard: { backgroundColor: '#f97316', borderRadius: 24, padding: 18, shadowColor: '#ea580c', shadowOpacity: 0.25, shadowRadius: 10, elevation: 4 },
   heroPre: { color: '#ffedd5', fontSize: 13, fontWeight: 'bold', textTransform: 'uppercase' },
   heroMain: { color: '#fff', fontSize: 22, fontWeight: 'bold', marginTop: 4, lineHeight: 28 },
@@ -8035,6 +8118,7 @@ const styles = StyleSheet.create({
   calendarCard: {
     width: '100%',
     maxWidth: 380,
+    maxHeight: '92%',
     backgroundColor: '#ffffff',
     borderRadius: 22,
     padding: 18,
