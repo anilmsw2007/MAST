@@ -1003,6 +1003,8 @@ const DEFAULT_SCHOOL_CHILDREN = [
     routeTitleEn: 'Anand Vihar Express (Route #12)',
     busCode: 'DEL-DPS-RKP-B12',
     vehicleNo: 'DL 01 AB 4321 (Tata Starbus)',
+    nightDepotHi: 'मयूर विहार फ़ेज़ 1 डिपो (लास्ट स्टैंड)',
+    nightDepotEn: 'Mayur Vihar Phase 1 Depot (Night Stand)',
     stopNameHi: 'आनंद विहार गेट नं. 2 (आपका स्टॉप)',
     stopNameEn: 'Anand Vihar Gate #2 (Your Stop)',
     stopCoords: { lat: 28.6502, lng: 77.3150 },
@@ -1019,11 +1021,23 @@ const DEFAULT_SCHOOL_CHILDREN = [
     etaMins: 8,
     speedKmh: 38,
     isBoarded: true,
+    morningStops: [
+      { id: 1, time: '06:50 AM', titleHi: 'मयूर विहार फ़ेज़ 1 (लास्ट डिपो स्टैंड / नाइट पार्किंग)', titleEn: 'Mayur Vihar Phase 1 (Night Depot)', subHi: 'प्रारंभिक स्टैंड से रवाना ✓ (06:52 AM)', subEn: 'Departed from night depot ✓ (06:52 AM)', status: 'passed' },
+      { id: 2, time: '07:15 AM', titleHi: 'सेक्टर 14 गोलचक्कर', titleEn: 'Sector 14 Roundabout', subHi: 'पार हो चुका है ✓ (07:16 AM)', subEn: 'Passed on schedule ✓ (07:16 AM)', status: 'passed' },
+      { id: 3, time: '07:35 AM', titleHi: 'आनंद विहार गेट नं. 2 (आपका पिकअप स्टॉप)', titleEn: 'Anand Vihar Gate #2 (Your Pickup Stop)', subHi: 'बस 8 मिनट दूर है (~2.4 km)', subEn: 'Bus is 8 mins away (~2.4 km)', status: 'target', isUserStop: true },
+      { id: 4, time: '08:00 AM', titleHi: 'DPS R.K. Puram स्कूल गेट (अंतिम गंतव्य)', titleEn: 'DPS R.K. Puram Gate (School Arrival)', subHi: 'स्कूल आगमन (School Drop)', subEn: 'School Arrival', status: 'upcoming' }
+    ],
+    afternoonStops: [
+      { id: 1, time: '01:45 PM', titleHi: 'DPS R.K. Puram स्कूल गेट (स्कूल प्रस्थान)', titleEn: 'DPS R.K. Puram Gate (Departure)', subHi: 'स्कूल से रवाना ✓ (01:48 PM)', subEn: 'Departed from school ✓ (01:48 PM)', status: 'passed' },
+      { id: 2, time: '02:10 PM', titleHi: 'आनंद विहार गेट नं. 2 (आपका ड्रॉप स्टॉप)', titleEn: 'Anand Vihar Gate #2 (Your Drop Stop)', subHi: 'ड्रॉप हेतु 8 मिनट शेष (~2.4 km)', subEn: '8 mins to drop stop (~2.4 km)', status: 'target', isUserStop: true },
+      { id: 3, time: '02:28 PM', titleHi: 'सेक्टर 14 गोलचक्कर', titleEn: 'Sector 14 Roundabout', subHi: 'मार्ग में (On Route)', subEn: 'On Route', status: 'upcoming' },
+      { id: 4, time: '02:50 PM', titleHi: 'मयूर विहार फ़ेज़ 1 (लास्ट डिपो / रात की पार्किंग)', titleEn: 'Mayur Vihar Phase 1 (Night Depot Parking)', subHi: 'अंतिम डिपो पार्किंग स्टैंड', subEn: 'Final depot night parking', status: 'upcoming' }
+    ],
     stops: [
-      { id: 1, time: '07:15 AM', titleHi: 'DPS R.K. Puram स्कूल गेट', titleEn: 'DPS R.K. Puram Gate', subHi: 'समय पर रवाना ✓ (07:16 AM)', subEn: 'Departed on time ✓ (07:16 AM)', status: 'passed' },
-      { id: 2, time: '07:28 AM', titleHi: 'सेक्टर 14 गोलचक्कर', titleEn: 'Sector 14 Roundabout', subHi: 'पार हो चुका है ✓ (07:29 AM)', subEn: 'Passed on schedule ✓ (07:29 AM)', status: 'passed' },
-      { id: 3, time: '07:38 AM', titleHi: 'आनंद विहार गेट नं. 2 (आपका स्टॉप)', titleEn: 'Anand Vihar Gate #2 (Your Stop)', subHi: 'बस 8 मिनट दूर है (~2.4 km)', subEn: 'Bus is 8 mins away (~2.4 km)', status: 'target', isUserStop: true },
-      { id: 4, time: '07:50 AM', titleHi: 'मयूर विहार फ़ेज़ 1 (अंतिम स्टॉप)', titleEn: 'Mayur Vihar Phase 1 (Final Stop)', subHi: 'गंतव्य शेष (Upcoming)', subEn: 'Upcoming Destination', status: 'upcoming' }
+      { id: 1, time: '06:50 AM', titleHi: 'मयूर विहार फ़ेज़ 1 (लास्ट डिपो स्टैंड)', titleEn: 'Mayur Vihar Phase 1 (Night Depot)', subHi: 'प्रारंभिक स्टैंड से रवाना ✓ (06:52 AM)', subEn: 'Departed ✓ (06:52 AM)', status: 'passed' },
+      { id: 2, time: '07:15 AM', titleHi: 'सेक्टर 14 गोलचक्कर', titleEn: 'Sector 14 Roundabout', subHi: 'पार हो चुका है ✓ (07:16 AM)', subEn: 'Passed on schedule ✓ (07:16 AM)', status: 'passed' },
+      { id: 3, time: '07:35 AM', titleHi: 'आनंद विहार गेट नं. 2 (आपका स्टॉप)', titleEn: 'Anand Vihar Gate #2 (Your Stop)', subHi: 'बस 8 मिनट दूर है (~2.4 km)', subEn: 'Bus is 8 mins away (~2.4 km)', status: 'target', isUserStop: true },
+      { id: 4, time: '08:00 AM', titleHi: 'DPS R.K. Puram स्कूल गेट (अंतिम गंतव्य)', titleEn: 'DPS R.K. Puram Gate (School Arrival)', subHi: 'स्कूल आगमन (Upcoming)', subEn: 'Upcoming Destination', status: 'upcoming' }
     ]
   },
   {
@@ -1040,6 +1054,8 @@ const DEFAULT_SCHOOL_CHILDREN = [
     routeTitleEn: 'Mayur Vihar Link (Route #04)',
     busCode: 'DEL-XAV-105-B04',
     vehicleNo: 'DL 02 CD 8899 (Ashok Leyland)',
+    nightDepotHi: 'त्रिलोकपुरी टर्मिनल डिपो (लास्ट स्टैंड)',
+    nightDepotEn: 'Trilokpuri Terminal Depot (Night Stand)',
     stopNameHi: 'मयूर विहार फ़ेज़ 2 गेट 4 (आपका स्टॉप)',
     stopNameEn: 'Mayur Vihar Phase 2 Gate 4 (Your Stop)',
     stopCoords: { lat: 28.6115, lng: 77.3055 },
@@ -1056,11 +1072,23 @@ const DEFAULT_SCHOOL_CHILDREN = [
     etaMins: 14,
     speedKmh: 32,
     isBoarded: true,
+    morningStops: [
+      { id: 1, time: '06:45 AM', titleHi: 'त्रिलोकपुरी टर्मिनल (लास्ट डिपो स्टैंड)', titleEn: 'Trilokpuri Terminal (Night Depot)', subHi: 'प्रारंभिक स्टैंड से रवाना ✓ (06:48 AM)', subEn: 'Departed from night yard ✓ (06:48 AM)', status: 'passed' },
+      { id: 2, time: '07:10 AM', titleHi: 'अक्षरधाम मेट्रो गोलचक्कर', titleEn: 'Akshardham Metro Roundabout', subHi: 'पार हो चुका है ✓ (07:12 AM)', subEn: 'Passed on schedule ✓ (07:12 AM)', status: 'passed' },
+      { id: 3, time: '07:25 AM', titleHi: 'मयूर विहार फ़ेज़ 2 गेट 4 (आपका पिकअप स्टॉप)', titleEn: 'Mayur Vihar Phase 2 Gate 4 (Your Stop)', subHi: 'बस 14 मिनट दूर है (~4.2 km)', subEn: 'Bus is 14 mins away (~4.2 km)', status: 'target', isUserStop: true },
+      { id: 4, time: '07:50 AM', titleHi: 'सेंट जेवियर्स स्कूल गेट (अंतिम गंतव्य)', titleEn: "St. Xavier's Gate (School Arrival)", subHi: 'स्कूल आगमन (School Drop)', subEn: 'School Arrival', status: 'upcoming' }
+    ],
+    afternoonStops: [
+      { id: 1, time: '01:30 PM', titleHi: 'सेंट जेवियर्स स्कूल गेट (स्कूल प्रस्थान)', titleEn: "St. Xavier's Gate (Departure)", subHi: 'स्कूल से रवाना ✓ (01:32 PM)', subEn: 'Departed from school ✓ (01:32 PM)', status: 'passed' },
+      { id: 2, time: '01:55 PM', titleHi: 'मयूर विहार फ़ेज़ 2 गेट 4 (आपका ड्रॉप स्टॉप)', titleEn: 'Mayur Vihar Phase 2 Gate 4 (Your Stop)', subHi: 'ड्रॉप हेतु 14 मिनट शेष (~4.2 km)', subEn: '14 mins away to drop stop (~4.2 km)', status: 'target', isUserStop: true },
+      { id: 3, time: '02:15 PM', titleHi: 'अक्षरधाम मेट्रो गोलचक्कर', titleEn: 'Akshardham Metro Roundabout', subHi: 'मार्ग में (On Route)', subEn: 'On Route', status: 'upcoming' },
+      { id: 4, time: '02:35 PM', titleHi: 'त्रिलोकपुरी टर्मिनल (लास्ट डिपो / रात की पार्किंग)', titleEn: 'Trilokpuri Terminal (Night Depot)', subHi: 'अंतिम डिपो पार्किंग स्टैंड', subEn: 'Final depot night parking', status: 'upcoming' }
+    ],
     stops: [
-      { id: 1, time: '07:10 AM', titleHi: 'सेंट जेवियर्स स्कूल गेट', titleEn: "St. Xavier's Gate", subHi: 'समय पर रवाना ✓ (07:12 AM)', subEn: 'Departed on time ✓ (07:12 AM)', status: 'passed' },
-      { id: 2, time: '07:22 AM', titleHi: 'अक्षरधाम मेट्रो गोलचक्कर', titleEn: 'Akshardham Metro Roundabout', subHi: 'पार हो चुका है ✓ (07:23 AM)', subEn: 'Passed on schedule ✓ (07:23 AM)', status: 'passed' },
-      { id: 3, time: '07:35 AM', titleHi: 'मयूर विहार फ़ेज़ 2 गेट 4 (आपका स्टॉप)', titleEn: 'Mayur Vihar Phase 2 Gate 4 (Your Stop)', subHi: 'बस 14 मिनट दूर है (~4.2 km)', subEn: 'Bus is 14 mins away (~4.2 km)', status: 'target', isUserStop: true },
-      { id: 4, time: '07:48 AM', titleHi: 'त्रिलोकपुरी टर्मिनल (अंतिम स्टॉप)', titleEn: 'Trilokpuri Terminal (Final Stop)', subHi: 'गंतव्य शेष (Upcoming)', subEn: 'Upcoming Destination', status: 'upcoming' }
+      { id: 1, time: '06:45 AM', titleHi: 'त्रिलोकपुरी टर्मिनल (लास्ट डिपो स्टैंड)', titleEn: 'Trilokpuri Terminal (Night Depot)', subHi: 'प्रारंभिक स्टैंड से रवाना ✓ (06:48 AM)', subEn: 'Departed ✓ (06:48 AM)', status: 'passed' },
+      { id: 2, time: '07:10 AM', titleHi: 'अक्षरधाम मेट्रो गोलचक्कर', titleEn: 'Akshardham Metro Roundabout', subHi: 'पार हो चुका है ✓ (07:12 AM)', subEn: 'Passed ✓ (07:12 AM)', status: 'passed' },
+      { id: 3, time: '07:25 AM', titleHi: 'मयूर विहार फ़ेज़ 2 गेट 4 (आपका स्टॉप)', titleEn: 'Mayur Vihar Phase 2 Gate 4 (Your Stop)', subHi: 'बस 14 मिनट दूर है (~4.2 km)', subEn: 'Bus is 14 mins away (~4.2 km)', status: 'target', isUserStop: true },
+      { id: 4, time: '07:50 AM', titleHi: 'सेंट जेवियर्स स्कूल गेट (अंतिम गंतव्य)', titleEn: "St. Xavier's Gate (School Arrival)", subHi: 'स्कूल आगमन (Upcoming)', subEn: 'Upcoming Destination', status: 'upcoming' }
     ]
   },
   {
@@ -1077,6 +1105,8 @@ const DEFAULT_SCHOOL_CHILDREN = [
     routeTitleEn: 'Indirapuram Shuttle (Route #12)',
     busCode: 'UP-DPS-NOI-B12',
     vehicleNo: 'UP 16 Z 5544 (Eicher Skyline)',
+    nightDepotHi: 'इंदिरापुरम हैबिटैट सेंटर (लास्ट स्टैंड)',
+    nightDepotEn: 'Indirapuram Habitat Centre (Night Stand)',
     stopNameHi: 'शिप्रा सनसिटी गेट 3, इंदिरापुरम',
     stopNameEn: 'Shipra Suncity Gate 3, Indirapuram',
     stopCoords: { lat: 28.6360, lng: 77.3710 },
@@ -1093,11 +1123,23 @@ const DEFAULT_SCHOOL_CHILDREN = [
     etaMins: 11,
     speedKmh: 36,
     isBoarded: true,
+    morningStops: [
+      { id: 1, time: '06:45 AM', titleHi: 'इंदिरापुरम हैबिटैट सेंटर (लास्ट डिपो स्टैंड)', titleEn: 'Indirapuram Habitat Centre (Night Depot)', subHi: 'प्रारंभिक स्टैंड से रवाना ✓ (06:46 AM)', subEn: 'Departed from night yard ✓ (06:46 AM)', status: 'passed' },
+      { id: 2, time: '07:05 AM', titleHi: 'नोएडा सिटी सेंटर मेट्रो', titleEn: 'Noida City Centre Metro', subHi: 'पार हो चुका है ✓ (07:07 AM)', subEn: 'Passed on schedule ✓ (07:07 AM)', status: 'passed' },
+      { id: 3, time: '07:20 AM', titleHi: 'शिप्रा सनसिटी गेट 3 (आपका पिकअप स्टॉप)', titleEn: 'Shipra Suncity Gate 3 (Your Stop)', subHi: 'बस 11 मिनट दूर है (~3.3 km)', subEn: 'Bus is 11 mins away (~3.3 km)', status: 'target', isUserStop: true },
+      { id: 4, time: '07:45 AM', titleHi: 'DPS नोएडा गेट (अंतिम गंतव्य)', titleEn: 'DPS Noida Gate (School Arrival)', subHi: 'स्कूल आगमन (School Drop)', subEn: 'School Arrival', status: 'upcoming' }
+    ],
+    afternoonStops: [
+      { id: 1, time: '01:45 PM', titleHi: 'DPS नोएडा गेट (स्कूल प्रस्थान)', titleEn: 'DPS Noida Gate (Departure)', subHi: 'स्कूल से रवाना ✓ (01:47 PM)', subEn: 'Departed from school ✓ (01:47 PM)', status: 'passed' },
+      { id: 2, time: '02:05 PM', titleHi: 'शिप्रा सनसिटी गेट 3 (आपका ड्रॉप स्टॉप)', titleEn: 'Shipra Suncity Gate 3 (Your Stop)', subHi: 'ड्रॉप हेतु 11 मिनट शेष (~3.3 km)', subEn: '11 mins away to drop stop (~3.3 km)', status: 'target', isUserStop: true },
+      { id: 3, time: '02:25 PM', titleHi: 'नोएडा सिटी सेंटर मेट्रो', titleEn: 'Noida City Centre Metro', subHi: 'मार्ग में (On Route)', subEn: 'On Route', status: 'upcoming' },
+      { id: 4, time: '02:45 PM', titleHi: 'इंदिरापुरम हैबिटैट सेंटर (लास्ट डिपो / रात की पार्किंग)', titleEn: 'Indirapuram Habitat Centre (Night Depot)', subHi: 'अंतिम डिपो पार्किंग स्टैंड', subEn: 'Final depot night parking', status: 'upcoming' }
+    ],
     stops: [
-      { id: 1, time: '07:15 AM', titleHi: 'DPS नोएडा गेट (प्रस्थान)', titleEn: 'DPS Noida Gate', subHi: 'समय पर रवाना ✓ (07:15 AM)', subEn: 'Departed ✓ (07:15 AM)', status: 'passed' },
-      { id: 2, time: '07:25 AM', titleHi: 'नोएडा सिटी सेंटर मेट्रो', titleEn: 'Noida City Centre Metro', subHi: 'पार हो चुका है ✓ (07:26 AM)', subEn: 'Passed ✓ (07:26 AM)', status: 'passed' },
-      { id: 3, time: '07:36 AM', titleHi: 'शिप्रा सनसिटी गेट 3 (आपका स्टॉप)', titleEn: 'Shipra Suncity Gate 3 (Your Stop)', subHi: 'बस 11 मिनट दूर है (~3.3 km)', subEn: 'Bus is 11 mins away (~3.3 km)', status: 'target', isUserStop: true },
-      { id: 4, time: '07:50 AM', titleHi: 'इंदिरापुरम हैबिटैट सेंटर', titleEn: 'Indirapuram Habitat Centre', subHi: 'अंतिम स्टॉप (Final)', subEn: 'Final Stop', status: 'upcoming' }
+      { id: 1, time: '06:45 AM', titleHi: 'इंदिरापुरम हैबिटैट सेंटर (लास्ट डिपो स्टैंड)', titleEn: 'Indirapuram Habitat Centre (Night Depot)', subHi: 'प्रारंभिक स्टैंड से रवाना ✓ (06:46 AM)', subEn: 'Departed ✓ (06:46 AM)', status: 'passed' },
+      { id: 2, time: '07:05 AM', titleHi: 'नोएडा सिटी सेंटर मेट्रो', titleEn: 'Noida City Centre Metro', subHi: 'पार हो चुका है ✓ (07:07 AM)', subEn: 'Passed ✓ (07:07 AM)', status: 'passed' },
+      { id: 3, time: '07:20 AM', titleHi: 'शिप्रा सनसिटी गेट 3 (आपका स्टॉप)', titleEn: 'Shipra Suncity Gate 3 (Your Stop)', subHi: 'बस 11 मिनट दूर है (~3.3 km)', subEn: 'Bus is 11 mins away (~3.3 km)', status: 'target', isUserStop: true },
+      { id: 4, time: '07:45 AM', titleHi: 'DPS नोएडा गेट (अंतिम गंतव्य)', titleEn: 'DPS Noida Gate (School Arrival)', subHi: 'स्कूल आगमन (Upcoming)', subEn: 'Upcoming Destination', status: 'upcoming' }
     ]
   }
 ];
@@ -1356,6 +1398,12 @@ export default function App() {
   const [busRole, setBusRole] = useState<'parent' | 'driver'>('parent');
   const [isBusSimulating, setIsBusSimulating] = useState(false);
   const busTimerRef = useRef<any>(null);
+
+  // Bus Shift State: Morning Pickup (Night Depot -> Stops -> School) vs Afternoon Drop (School -> Stops -> Night Depot)
+  const [busTripShift, setBusTripShift] = useState<'morning' | 'afternoon'>(() => {
+    const hr = new Date().getHours();
+    return hr >= 12 && hr < 18 ? 'afternoon' : 'morning';
+  });
 
   // Active child helper
   const activeChild = schoolChildren.find(c => c.id === activeChildId) || schoolChildren[0] || null;
@@ -4843,6 +4891,48 @@ export default function App() {
                   </View>
                 </View>
 
+                {/* Morning Pickup vs Afternoon Drop Shift Switcher */}
+                <View style={{
+                  flexDirection: 'row',
+                  backgroundColor: '#f1f5f9',
+                  borderRadius: 14,
+                  padding: 4,
+                  marginBottom: 10,
+                  gap: 6
+                }}>
+                  <TouchableOpacity
+                    style={[
+                      { flex: 1, paddingVertical: 8, alignItems: 'center', borderRadius: 10 },
+                      busTripShift === 'morning' && { backgroundColor: '#fff', shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 3, elevation: 1 }
+                    ]}
+                    onPress={() => setBusTripShift('morning')}
+                  >
+                    <Text style={{
+                      fontSize: 12,
+                      fontWeight: 'bold',
+                      color: busTripShift === 'morning' ? '#0284c7' : '#64748b'
+                    }}>
+                      🌅 {lang === 'hi' ? 'सुबह: पिकअप (स्कूल की ओर)' : 'Morning: Pickup to School'}
+                    </Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    style={[
+                      { flex: 1, paddingVertical: 8, alignItems: 'center', borderRadius: 10 },
+                      busTripShift === 'afternoon' && { backgroundColor: '#fff', shadowColor: '#000', shadowOpacity: 0.08, shadowRadius: 3, elevation: 1 }
+                    ]}
+                    onPress={() => setBusTripShift('afternoon')}
+                  >
+                    <Text style={{
+                      fontSize: 12,
+                      fontWeight: 'bold',
+                      color: busTripShift === 'afternoon' ? '#ea580c' : '#64748b'
+                    }}>
+                      🌇 {lang === 'hi' ? 'दोपहर: ड्रॉप (घर की ओर)' : 'Afternoon: Drop to Home'}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+
                 {/* Driver Duty / Trip Status Banner */}
                 {!isTripActive ? (
                   <View style={{
@@ -4859,19 +4949,29 @@ export default function App() {
                     <Text style={{ fontSize: 26 }}>🔴</Text>
                     <View style={{ flex: 1 }}>
                       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                        <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#b91c1c' }}>
-                          {lang === 'hi' ? 'चालक अभी ड्यूटी पर नहीं हैं / बस स्कूल में खड़ी है' : 'Driver Off Duty / Bus Parked at School'}
+                        <Text style={{ fontSize: 13, fontWeight: 'bold', color: '#b91c1c' }}>
+                          {busTripShift === 'morning'
+                            ? (lang === 'hi' 
+                                ? `चालक अभी ड्यूटी पर नहीं हैं / बस अपने अंतिम डिपो (${activeChild.nightDepotHi || 'लास्ट स्टैंड'}) में खड़ी है`
+                                : `Driver Off Duty / Bus Parked at Night Depot (${activeChild.nightDepotEn || 'Last Stand'})`)
+                            : (lang === 'hi'
+                                ? 'दोपहर की ड्रॉप ड्यूटी अभी शुरू नहीं हुई / बस स्कूल परिसर में खड़ी है'
+                                : 'Afternoon Drop Duty Not Started / Bus at School Campus')}
                         </Text>
                         <View style={{ backgroundColor: '#fee2e2', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 }}>
                           <Text style={{ fontSize: 10, fontWeight: 'bold', color: '#dc2626' }}>
-                            {lang === 'hi' ? 'ऑफलाइन' : 'OFFLINE'}
+                            {busTripShift === 'morning' ? (lang === 'hi' ? 'नाइट स्टैंड' : 'NIGHT YARD') : (lang === 'hi' ? 'स्कूल यार्ड' : 'OFFLINE')}
                           </Text>
                         </View>
                       </View>
-                      <Text style={{ fontSize: 12, color: '#991b1b', marginTop: 3, lineHeight: 16 }}>
-                        {lang === 'hi'
-                          ? 'जब चालक ड्यूटी शुरू करेंगे (START TRIP), वास्तविक दूरी (Km) व लाइव GPS मूवमेंट सक्रिय हो जाएगा।'
-                          : 'Live GPS tracking and real-time distance (Km) will activate once the driver starts duty trip.'}
+                      <Text style={{ fontSize: 11, color: '#991b1b', marginTop: 3, lineHeight: 16 }}>
+                        {busTripShift === 'morning'
+                          ? (lang === 'hi'
+                              ? `स्कूल बस रात में स्कूल में नहीं, बल्कि अपने रूट के अंतिम डिपो स्टैंड (${activeChild.nightDepotHi || 'लास्ट स्टैंड'}) पर पार्क रहती है। सुबह बच्चों को पिक करने के लिए यहीं से रवाना होगी।`
+                              : `School bus parks overnight at its last destination depot, not at school. Morning pickup trip will depart from here.`)
+                          : (lang === 'hi'
+                              ? 'स्कूल की छुट्टी होने पर चालक ड्यूटी शुरू करेंगे और बच्चों को घर छोड़ने के लिए रवाना होंगे।'
+                              : 'Driver will start trip when school finishes to drop students home.')}
                       </Text>
                     </View>
                   </View>
@@ -4892,7 +4992,9 @@ export default function App() {
                       <View style={{ flex: 1 }}>
                         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                           <Text style={{ fontSize: 14, fontWeight: 'bold', color: '#15803d' }}>
-                            {lang === 'hi' ? 'बस लाइव चल रही है • ऑन ड्यूटी' : 'Bus is Live on Route • On Duty'}
+                            {busTripShift === 'morning'
+                              ? (lang === 'hi' ? 'सुबह की पिकअप ट्रिप लाइव है • स्कूल की ओर' : 'Morning Pickup Live • Heading to School')
+                              : (lang === 'hi' ? 'दोपहर की ड्रॉप ट्रिप लाइव है • घर की ओर' : 'Afternoon Drop Live • Heading Home')}
                           </Text>
                           <View style={{ backgroundColor: '#dcfce7', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 }}>
                             <Text style={{ fontSize: 10, fontWeight: 'bold', color: '#16a34a' }}>
@@ -4931,13 +5033,15 @@ export default function App() {
                       <View style={{ flex: 1 }}>
                         <Text style={styles.mapEtaSub}>
                           {isTripActive 
-                            ? t.etaTitle 
+                            ? (busTripShift === 'morning' ? (lang === 'hi' ? 'सुबह पिकअप ETA' : 'Morning Pickup ETA') : (lang === 'hi' ? 'दोपहर ड्रॉप ETA' : 'Afternoon Drop ETA'))
                             : (lang === 'hi' ? 'बस की वर्तमान स्थिति' : 'Current Bus Status')}
                         </Text>
                         <Text style={styles.mapEtaStop} numberOfLines={1}>
                           {isTripActive 
                             ? (lang === 'hi' ? activeChild.stopNameHi : activeChild.stopNameEn)
-                            : (lang === 'hi' ? 'स्कूल परिसर में खड़ी है' : 'Parked at School Campus')}
+                            : (busTripShift === 'morning' 
+                                ? (lang === 'hi' ? `${activeChild.nightDepotHi || 'लास्ट डिपो'} पर खड़ी है` : `Parked at ${activeChild.nightDepotEn || 'Night Depot'}`)
+                                : (lang === 'hi' ? 'स्कूल परिसर में खड़ी है' : 'Parked at School Campus'))}
                         </Text>
                       </View>
                     </View>
@@ -4973,14 +5077,16 @@ export default function App() {
                         <View style={{
                           position: 'absolute',
                           top: -16,
-                          left: -12,
+                          left: -14,
                           backgroundColor: '#334155',
                           paddingHorizontal: 5,
                           paddingVertical: 1,
                           borderRadius: 4
                         }}>
                           <Text style={{ color: '#cbd5e1', fontSize: 8, fontWeight: 'bold' }}>
-                            {lang === 'hi' ? 'स्कूल (खड़ी है)' : 'Parked'}
+                            {busTripShift === 'morning' 
+                              ? (lang === 'hi' ? 'लास्ट स्टैंड (खड़ी है)' : 'Depot (Parked)') 
+                              : (lang === 'hi' ? 'स्कूल (खड़ी है)' : 'School (Parked)')}
                           </Text>
                         </View>
                       )}
@@ -4990,6 +5096,23 @@ export default function App() {
                     <View style={[styles.stopPin, { left: '72%' }]}>
                       <Text style={{ fontSize: 22 }}>📍</Text>
                     </View>
+                  </View>
+
+                  {/* Route Start and End Labels */}
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 4, marginTop: -4 }}>
+                    <Text style={{ fontSize: 10, color: '#94a3b8', fontWeight: 'bold' }}>
+                      {busTripShift === 'morning' 
+                        ? (lang === 'hi' ? '🌙 लास्ट डिपो (स्टार्ट)' : '🌙 Night Depot (Start)')
+                        : (lang === 'hi' ? '🏫 स्कूल गेट (स्टार्ट)' : '🏫 School Gate (Start)')}
+                    </Text>
+                    <Text style={{ fontSize: 10, color: '#f59e0b', fontWeight: 'bold' }}>
+                      {lang === 'hi' ? '📍 आपका स्टॉप' : '📍 Your Stop'}
+                    </Text>
+                    <Text style={{ fontSize: 10, color: '#94a3b8', fontWeight: 'bold' }}>
+                      {busTripShift === 'morning' 
+                        ? (lang === 'hi' ? '🏫 स्कूल (अंतिम)' : '🏫 School (Final)')
+                        : (lang === 'hi' ? '🌙 लास्ट डिपो (अंतिम)' : '🌙 Night Depot (Final)')}
+                    </Text>
                   </View>
 
                   {/* HUD Telemetry Gauges */}
@@ -5002,12 +5125,14 @@ export default function App() {
                     </View>
                     <View style={styles.hudMetricPill}>
                       <Text style={styles.hudMetricLabel}>{lang === 'hi' ? 'वास्तविक दूरी' : 'Live Distance'}</Text>
-                      <Text style={[styles.hudMetricValue, !isTripActive && { color: '#fbbf24', fontSize: 12 }]}>
+                      <Text style={[styles.hudMetricValue, !isTripActive && { color: '#fbbf24', fontSize: 11 }]}>
                         {isTripActive 
                           ? (activeChild.etaMins === 0 
                               ? (lang === 'hi' ? 'स्टॉप पर' : 'Arrived') 
                               : `${(activeChild.etaMins * 0.3).toFixed(1)} km`)
-                          : (lang === 'hi' ? 'स्कूल में (0 km)' : 'At School (0 km)')}
+                          : (busTripShift === 'morning' 
+                              ? (lang === 'hi' ? 'लास्ट स्टैंड पर (0 km)' : 'At Depot (0 km)') 
+                              : (lang === 'hi' ? 'स्कूल में (0 km)' : 'At School (0 km)'))}
                       </Text>
                     </View>
                     <View style={styles.hudMetricPill}>
@@ -5075,11 +5200,20 @@ export default function App() {
 
                 {/* Route Stops Timeline for Active Child's Bus */}
                 <View style={styles.card}>
-                  <Text style={styles.sectionHeading}>
-                    📍 {lang === 'hi' ? `${activeChild.busNo} रूट स्टॉप्स व लाइव स्थिति` : `${activeChild.busNo} Route Stops & Timeline`}
-                  </Text>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                    <Text style={styles.sectionHeading}>
+                      📍 {lang === 'hi' 
+                          ? `${activeChild.busNo} • ${busTripShift === 'morning' ? 'सुबह पिकअप रूट' : 'दोपहर ड्रॉप रूट'}` 
+                          : `${activeChild.busNo} • ${busTripShift === 'morning' ? 'Morning Pickup' : 'Afternoon Drop'}`}
+                    </Text>
+                    <View style={{ backgroundColor: busTripShift === 'morning' ? '#e0f2fe' : '#ffedd5', paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 }}>
+                      <Text style={{ fontSize: 10, fontWeight: 'bold', color: busTripShift === 'morning' ? '#0369a1' : '#c2410c' }}>
+                        {busTripShift === 'morning' ? (lang === 'hi' ? '🌅 पिकअप शिफ्ट' : 'Morning Shift') : (lang === 'hi' ? '🌇 ड्रॉप शिफ्ट' : 'Drop Shift')}
+                      </Text>
+                    </View>
+                  </View>
                   
-                  {activeChild.stops.map(st => {
+                  {((busTripShift === 'morning' ? (activeChild.morningStops || activeChild.stops) : (activeChild.afternoonStops || activeChild.stops)) || []).map(st => {
                     const title = lang === 'hi' ? st.titleHi : st.titleEn;
                     const isUserStop = !!st.isUserStop;
                     return (
@@ -5103,10 +5237,16 @@ export default function App() {
                                   ? (activeChild.etaMins === 0 
                                       ? (lang === 'hi' ? '🎉 बस आपके स्टॉप पर पहुँच चुकी है!' : '🎉 Bus has reached your stop!') 
                                       : (lang === 'hi' ? `बस ${activeChild.etaMins} मिनट दूर है (~ ${(activeChild.etaMins * 0.3).toFixed(1)} km)` : `Bus is ${activeChild.etaMins} mins away (~ ${(activeChild.etaMins * 0.3).toFixed(1)} km)`))
-                                  : (lang === 'hi' ? 'चालक अभी ड्यूटी पर नहीं हैं (बस स्कूल में खड़ी है)' : 'Driver off duty (Bus parked at school)'))
+                                  : (busTripShift === 'morning'
+                                      ? (lang === 'hi' ? `चालक ड्यूटी पर नहीं हैं (बस रात से ${activeChild.nightDepotHi || 'लास्ट स्टैंड'} पर खड़ी है)` : `Driver off duty (Bus at night depot)`)
+                                      : (lang === 'hi' ? 'चालक ड्यूटी पर नहीं हैं (बस स्कूल में खड़ी है)' : 'Driver off duty (Bus at school)')))
                               : (isTripActive 
                                   ? (lang === 'hi' ? st.subHi : st.subEn) 
-                                  : (lang === 'hi' ? 'यात्रा प्रारंभ होने की प्रतीक्षा में' : 'Waiting for trip start'))}
+                                  : (st.id === 1 && busTripShift === 'morning'
+                                      ? (lang === 'hi' ? 'बस रात से यहीं लास्ट डिपो में खड़ी है 🅿️' : 'Bus parked at night depot 🅿️')
+                                      : (st.id === 1 && busTripShift === 'afternoon'
+                                          ? (lang === 'hi' ? 'बस अभी स्कूल परिसर में खड़ी है 🅿️' : 'Bus parked at school campus 🅿️')
+                                          : (lang === 'hi' ? 'यात्रा प्रारंभ होने की प्रतीक्षा में' : 'Waiting for trip start'))))}
                           </Text>
                         </View>
                       </View>
