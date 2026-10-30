@@ -1144,6 +1144,76 @@ const DEFAULT_SCHOOL_CHILDREN = [
   }
 ];
 
+const DEFAULT_MEDICINES = [
+  {
+    id: 101,
+    nameHi: 'Metformin 500mg',
+    nameEn: 'Metformin 500mg',
+    time: '08:30 AM',
+    doseHi: '1 गोली खाने बाद',
+    doseEn: '1 pill after breakfast',
+    doctorHi: 'डॉ. एस.के. शर्मा',
+    doctorEn: 'Dr. S.K. Sharma',
+    hospitalHi: 'मैक्स सुपर स्पेशलिटी हॉस्पिटल',
+    hospitalEn: 'Max Super Speciality Hospital',
+    patientHi: 'बाबूजी',
+    patientEn: 'Father',
+    date: '30 Oct 2026',
+    courseDays: 10,
+    startDate: '30 Oct',
+    doctorFollowupNeeded: true,
+    doctorFollowupDate: '09 Nov 2026',
+    refillReminderNeeded: true,
+    refillDate: '08 Nov'
+  },
+  {
+    id: 102,
+    nameHi: 'Thyronorm 50mcg',
+    nameEn: 'Thyronorm 50mcg',
+    time: '06:30 AM',
+    doseHi: '1 गोली खाली पेट',
+    doseEn: '1 pill empty stomach',
+    doctorHi: 'डॉ. अनीता वर्मा',
+    doctorEn: 'Dr. Anita Verma',
+    hospitalHi: 'अपोलो क्लिनिक',
+    hospitalEn: 'Apollo Clinic',
+    patientHi: 'माताजी',
+    patientEn: 'Mother',
+    date: '30 Oct 2026',
+    courseDays: 30,
+    startDate: '15 Oct',
+    doctorFollowupNeeded: true,
+    doctorFollowupDate: '15 Nov 2026',
+    refillReminderNeeded: true,
+    refillDate: '13 Nov'
+  }
+];
+
+const DEFAULT_REMINDERS = [
+  {
+    id: 901,
+    category: 'health',
+    linkedMedId: 101,
+    titleHi: '👨‍⚕️ डॉ. फॉलो-अप चेकअप: डॉ. शर्मा (बाबूजी)',
+    titleEn: '👨‍⚕️ Doctor Review: Dr. Sharma (Father)',
+    amount: '10 दिन का कोर्स पूरा',
+    date: '09 Nov',
+    urgent: true,
+    paid: false
+  },
+  {
+    id: 902,
+    category: 'health',
+    linkedMedId: 101,
+    titleHi: '💊 दवा रीफिल अलर्ट: Metformin 500mg (बाबूजी)',
+    titleEn: '💊 Refill Alert: Metformin 500mg (Father)',
+    amount: 'कल दवा खत्म होगी',
+    date: '08 Nov',
+    urgent: true,
+    paid: false
+  }
+];
+
 
 // 31 Inspiring Daily Thoughts for Home Screen Rotation
 const DAILY_QUOTES = [
@@ -1458,7 +1528,7 @@ export default function App() {
   };
 
   // Permanent Medicines List (Clean - Ready for User)
-  const [medicines, setMedicines] = useState<any[]>([]);
+  const [medicines, setMedicines] = useState<any[]>(DEFAULT_MEDICINES);
   const [takenMeds, setTakenMeds] = useState<{ [key: number]: boolean }>({});
 
   // Appliances List (Clean - Ready for User)
@@ -1471,7 +1541,7 @@ export default function App() {
   const [familyDocs, setFamilyDocs] = useState<any[]>([]);
 
   // Upcoming Reminders List (Clean - Ready for User)
-  const [upcomingReminders, setUpcomingReminders] = useState<any[]>([]);
+  const [upcomingReminders, setUpcomingReminders] = useState<any[]>(DEFAULT_REMINDERS);
 
   // Household Expenses (Clean - Ready for User)
   const [expenses, setExpenses] = useState<any[]>([]);
@@ -1508,10 +1578,14 @@ export default function App() {
   // Forms State
   const [newMedName, setNewMedName] = useState('');
   const [newMedTime, setNewMedTime] = useState('08:00 AM');
-  const [newMedDose, setNewMedDose] = useState('');
+  const [newMedDose, setNewMedDose] = useState('1 गोली खाने बाद');
   const [newMedDoc, setNewMedDoc] = useState('');
   const [newMedPhoto, setNewMedPhoto] = useState<string | null>(null);
   const [newMedPatient, setNewMedPatient] = useState('स्वयं (Self)');
+  const [newMedCourseDays, setNewMedCourseDays] = useState('10');
+  const [newMedFollowupNeeded, setNewMedFollowupNeeded] = useState(true);
+  const [newMedFollowupDate, setNewMedFollowupDate] = useState('');
+  const [newMedRefillNeeded, setNewMedRefillNeeded] = useState(true);
 
   const [newVaultName, setNewVaultName] = useState('');
   const [newVaultPrice, setNewVaultPrice] = useState('');
@@ -1676,7 +1750,11 @@ export default function App() {
         if (storedCode) setFamilyCode(storedCode);
 
         const storedMeds = await AsyncStorage.getItem('@mast_v7_meds');
-        if (storedMeds) setMedicines(JSON.parse(storedMeds));
+        if (storedMeds && JSON.parse(storedMeds).length > 0) {
+          setMedicines(JSON.parse(storedMeds));
+        } else {
+          setMedicines(DEFAULT_MEDICINES);
+        }
 
         const storedTaken = await AsyncStorage.getItem('@mast_v7_taken');
         if (storedTaken) setTakenMeds(JSON.parse(storedTaken));
@@ -1691,7 +1769,11 @@ export default function App() {
         if (storedDocs) setFamilyDocs(JSON.parse(storedDocs));
 
         const storedReminders = await AsyncStorage.getItem('@mast_v7_reminders');
-        if (storedReminders) setUpcomingReminders(JSON.parse(storedReminders));
+        if (storedReminders && JSON.parse(storedReminders).length > 0) {
+          setUpcomingReminders(JSON.parse(storedReminders));
+        } else {
+          setUpcomingReminders(DEFAULT_REMINDERS);
+        }
 
         const storedExpenses = await AsyncStorage.getItem('@mast_v7_expenses');
         if (storedExpenses) setExpenses(JSON.parse(storedExpenses));
@@ -2665,10 +2747,18 @@ export default function App() {
     setEditingMedId(null);
     setNewMedName('');
     setNewMedTime('08:00 AM');
-    setNewMedDose('');
+    setNewMedDose('1 गोली खाने बाद');
     setNewMedDoc('');
     setNewMedPhoto(null);
     setNewMedPatient(userProfile?.name ? `${userProfile.name} (स्वयं)` : 'स्वयं (Self)');
+    setNewMedCourseDays('10');
+    setNewMedFollowupNeeded(true);
+    const defaultFollowup = new Date();
+    defaultFollowup.setDate(defaultFollowup.getDate() + 10);
+    const monthsShort = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const dStr = defaultFollowup.getDate() < 10 ? `0${defaultFollowup.getDate()}` : `${defaultFollowup.getDate()}`;
+    setNewMedFollowupDate(`${dStr} ${monthsShort[defaultFollowup.getMonth()]} ${defaultFollowup.getFullYear()}`);
+    setNewMedRefillNeeded(true);
     setIsAddMedModalOpen(true);
   };
   const openEditMedModal = (m: any) => {
@@ -2679,6 +2769,10 @@ export default function App() {
     setNewMedDoc(m.doctorHi || m.doctorEn || m.doctor || '');
     setNewMedPhoto(m.imageUri || null);
     setNewMedPatient(m.patientHi || m.patientEn || m.patient || 'स्वयं');
+    setNewMedCourseDays(m.courseDays ? `${m.courseDays}` : '10');
+    setNewMedFollowupNeeded(m.doctorFollowupNeeded !== false);
+    setNewMedFollowupDate(m.doctorFollowupDate || '');
+    setNewMedRefillNeeded(m.refillReminderNeeded !== false);
     setIsAddMedModalOpen(true);
   };
 
@@ -3191,7 +3285,7 @@ export default function App() {
   // Add Handlers
   // Calendar Control Helpers
   const openCalendar = (
-    target: 'appliance' | 'reminder' | 'expense' | 'member' | 'doc' | 'gold' | 'diary' | 'child_due',
+    target: 'appliance' | 'reminder' | 'expense' | 'member' | 'doc' | 'gold' | 'diary' | 'child_due' | 'med_followup',
     currentVal?: string
   ) => {
     let initDate = new Date();
@@ -3240,6 +3334,8 @@ export default function App() {
       setNewDiaryDate(formattedFull);
     } else if (calendarTarget === 'child_due') {
       setNewChildDueDay('' + day);
+    } else if (calendarTarget === 'med_followup') {
+      setNewMedFollowupDate(formattedFull);
     }
     setCalendarTarget(null);
   };
@@ -3584,6 +3680,25 @@ export default function App() {
     }
     const patientName = newMedPatient || (lang === 'hi' ? 'स्वयं (Self)' : 'Self');
     const existing = medicines.find(m => m.id === editingMedId);
+    const cDays = parseInt(newMedCourseDays, 10) || 10;
+    const now = new Date();
+    const monthsShort = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+    // Refill date: 1 day before course ends
+    const refillDateObj = new Date();
+    refillDateObj.setDate(refillDateObj.getDate() + Math.max(1, cDays - 1));
+    const rDayStr = refillDateObj.getDate() < 10 ? `0${refillDateObj.getDate()}` : `${refillDateObj.getDate()}`;
+    const computedRefillDate = `${rDayStr} ${monthsShort[refillDateObj.getMonth()]}`;
+
+    // Follow-up date: today + cDays (or user specified)
+    let computedFollowupDate = newMedFollowupDate.trim();
+    if (!computedFollowupDate) {
+      const followupDateObj = new Date();
+      followupDateObj.setDate(followupDateObj.getDate() + cDays);
+      const fDayStr = followupDateObj.getDate() < 10 ? `0${followupDateObj.getDate()}` : `${followupDateObj.getDate()}`;
+      computedFollowupDate = `${fDayStr} ${monthsShort[followupDateObj.getMonth()]} ${followupDateObj.getFullYear()}`;
+    }
+
     const savedEntry = {
       id: editingMedId || Date.now(),
       nameHi: newMedName.trim(),
@@ -3591,24 +3706,113 @@ export default function App() {
       time: newMedTime,
       doseHi: newMedDose || '1 गोली',
       doseEn: newMedDose || '1 pill',
-      doctorHi: newMedDoc || 'डॉ. निजी चिकित्सक',
+      doctorHi: newMedDoc || (lang === 'hi' ? 'डॉ. निजी चिकित्सक' : 'Dr. Family Physician'),
       doctorEn: newMedDoc || 'Dr. Family Physician',
       hospitalHi: existing?.hospitalHi || 'पारिवारिक क्लिनिक',
       hospitalEn: existing?.hospitalEn || 'Family Clinic',
       patientHi: patientName,
       patientEn: patientName,
       date: existing?.date || (lang === 'hi' ? 'आज' : 'Today'),
-      imageUri: newMedPhoto
+      imageUri: newMedPhoto,
+      courseDays: cDays,
+      startDate: existing?.startDate || `${now.getDate()} ${monthsShort[now.getMonth()]}`,
+      doctorFollowupNeeded: newMedFollowupNeeded,
+      doctorFollowupDate: computedFollowupDate,
+      refillReminderNeeded: newMedRefillNeeded,
+      refillDate: computedRefillDate
     };
+
     const updated = editingMedId ? medicines.map(m => m.id === editingMedId ? savedEntry : m) : [...medicines, savedEntry];
     await saveMeds(updated);
+
+    // Sync to Upcoming Reminders
+    const medId = savedEntry.id;
+    const otherReminders = upcomingReminders.filter(r => r.linkedMedId !== medId);
+    const newMedsReminders: any[] = [];
+
+    if (newMedFollowupNeeded) {
+      newMedsReminders.push({
+        id: Date.now() + 201,
+        linkedMedId: medId,
+        category: 'health',
+        titleHi: `👨‍⚕️ डॉ. फॉलो-अप चेकअप: ${newMedDoc || 'डॉक्टर'} (${patientName})`,
+        titleEn: `👨‍⚕️ Doctor Review: ${newMedDoc || 'Doctor'} (${patientName})`,
+        amount: `${cDays} दिन का कोर्स पूरा`,
+        date: computedFollowupDate.split(' ').slice(0, 2).join(' '),
+        urgent: true,
+        paid: false
+      });
+    }
+
+    if (newMedRefillNeeded) {
+      newMedsReminders.push({
+        id: Date.now() + 202,
+        linkedMedId: medId,
+        category: 'health',
+        titleHi: `💊 दवा रीफिल अलर्ट: ${newMedName.trim()} (${patientName})`,
+        titleEn: `💊 Refill Alert: ${newMedName.trim()} (${patientName})`,
+        amount: 'कल दवा खत्म होगी',
+        date: computedRefillDate,
+        urgent: true,
+        paid: false
+      });
+    }
+
+    if (newMedsReminders.length > 0) {
+      await saveReminders([...otherReminders, ...newMedsReminders]);
+    } else if (editingMedId) {
+      await saveReminders(otherReminders);
+    }
+
     setNewMedName('');
-    setNewMedDose('');
+    setNewMedDose('1 गोली खाने बाद');
     setNewMedDoc('');
     setNewMedPhoto(null);
     setEditingMedId(null);
     setIsAddMedModalOpen(false);
-    Alert.alert(lang === 'hi' ? 'सफल' : 'Success', editingMedId ? (lang === 'hi' ? 'दवाई की जानकारी अपडेट हो गई!' : 'Medicine updated!') : (lang === 'hi' ? 'नई दवाई और पर्चा सुरक्षित सेव हो गए!' : 'Medicine saved successfully!'));
+    Alert.alert(
+      lang === 'hi' ? 'सफल' : 'Success',
+      lang === 'hi' 
+        ? `दवाई सुरक्षित हो गई!\n${newMedFollowupNeeded ? `• 👨‍⚕️ डॉ. फॉलो-अप: ${computedFollowupDate}\n` : ''}${newMedRefillNeeded ? `• 🔔 रीफिल अलर्ट: ${computedRefillDate}` : ''}`
+        : `Medicine saved!\n${newMedFollowupNeeded ? `• Dr. Review: ${computedFollowupDate}\n` : ''}${newMedRefillNeeded ? `• Refill Alert: ${computedRefillDate}` : ''}`
+    );
+  };
+
+  const handleQuickRefill = async (med: any) => {
+    const additionalDays = 10;
+    const now = new Date();
+    const monthsShort = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const newRefillObj = new Date();
+    newRefillObj.setDate(newRefillObj.getDate() + additionalDays - 1);
+    const rDayStr = newRefillObj.getDate() < 10 ? `0${newRefillObj.getDate()}` : `${newRefillObj.getDate()}`;
+    const newRefillDate = `${rDayStr} ${monthsShort[newRefillObj.getMonth()]}`;
+
+    const updatedMed = {
+      ...med,
+      courseDays: (med.courseDays || 10) + additionalDays,
+      refillDate: newRefillDate
+    };
+    const updated = medicines.map(m => m.id === med.id ? updatedMed : m);
+    await saveMeds(updated);
+
+    const otherReminders = upcomingReminders.filter(r => !(r.linkedMedId === med.id && r.titleHi?.includes('रीफिल')));
+    const newRefillReminder = {
+      id: Date.now() + 203,
+      linkedMedId: med.id,
+      category: 'health',
+      titleHi: `💊 दवा रीफिल अलर्ट: ${med.nameHi || med.nameEn} (${med.patientHi || 'स्वयं'})`,
+      titleEn: `💊 Refill Alert: ${med.nameEn || med.nameHi} (${med.patientEn || 'Self'})`,
+      amount: 'कल दवा खत्म होगी',
+      date: newRefillDate,
+      urgent: true,
+      paid: false
+    };
+    await saveReminders([...otherReminders, newRefillReminder]);
+
+    Alert.alert(
+      lang === 'hi' ? 'दवा रीफिल दर्ज ✓' : 'Refill Recorded ✓',
+      lang === 'hi' ? `नई दवा स्टॉक में जुड़ गई (+10 दिन)।\nअगला रीफिल अलर्ट: ${newRefillDate}` : `Added 10 days stock. Next refill alert: ${newRefillDate}`
+    );
   };
 
   const handleAddNewAppliance = async () => {
@@ -4097,7 +4301,7 @@ export default function App() {
                         <Text style={{ color: '#fff', fontSize: 14, fontWeight: 'bold' }}>{isTaken ? '✓' : ''}</Text>
                       </TouchableOpacity>
                       <View style={{ flex: 1 }}>
-                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
                           <Text style={[styles.agendaItemTitle, isTaken && styles.strike]}>{medName}</Text>
                           {(med.patientHi || med.patientEn) ? (
                             <View style={{ backgroundColor: '#fff7ed', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, borderWidth: 1, borderColor: '#fed7aa' }}>
@@ -4106,8 +4310,36 @@ export default function App() {
                               </Text>
                             </View>
                           ) : null}
+                          {med.courseDays && (
+                            <View style={{ backgroundColor: '#f0fdf4', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, borderWidth: 1, borderColor: '#bbf7d0' }}>
+                              <Text style={{ fontSize: 10, color: '#166534', fontWeight: 'bold' }}>
+                                ⏳ {med.courseDays} {lang === 'hi' ? 'दिन कोर्स' : 'days course'}
+                              </Text>
+                            </View>
+                          )}
                         </View>
                         <Text style={styles.agendaItemTime}>{med.time} • {medDose}</Text>
+
+                        {/* Real-world Course, Refill and Follow-up badges */}
+                        <View style={{ flexDirection: 'row', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
+                          {med.refillDate && (
+                            <TouchableOpacity 
+                              onPress={() => handleQuickRefill(med)}
+                              style={{ backgroundColor: '#fef2f2', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, borderWidth: 1, borderColor: '#fca5a5', flexDirection: 'row', alignItems: 'center', gap: 3 }}
+                            >
+                              <Text style={{ fontSize: 10, color: '#b91c1c', fontWeight: 'bold' }}>
+                                🔔 {lang === 'hi' ? `रीफिल: ${med.refillDate} (दवा लानी है)` : `Refill: ${med.refillDate}`}
+                              </Text>
+                            </TouchableOpacity>
+                          )}
+                          {med.doctorFollowupDate && (
+                            <View style={{ backgroundColor: '#eff6ff', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, borderWidth: 1, borderColor: '#bfdbfe', flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                              <Text style={{ fontSize: 10, color: '#1d4ed8', fontWeight: 'bold' }}>
+                                👨‍⚕️ {lang === 'hi' ? `डॉ. विज़िट: ${med.doctorFollowupDate}` : `Dr. Visit: ${med.doctorFollowupDate}`}
+                              </Text>
+                            </View>
+                          )}
+                        </View>
                       </View>
 
                       {med.imageUri && (
@@ -4649,8 +4881,45 @@ export default function App() {
                       <Text style={{ color: '#fff', fontSize: 14, fontWeight: 'bold' }}>{isTaken ? '✓' : ''}</Text>
                     </TouchableOpacity>
                     <View style={{ flex: 1 }}>
-                      <Text style={[styles.agendaItemTitle, isTaken && styles.strike]}>{medName}</Text>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                        <Text style={[styles.agendaItemTitle, isTaken && styles.strike]}>{medName}</Text>
+                        {(med.patientHi || med.patientEn) ? (
+                          <View style={{ backgroundColor: '#fff7ed', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, borderWidth: 1, borderColor: '#fed7aa' }}>
+                            <Text style={{ fontSize: 10, color: '#c2410c', fontWeight: 'bold' }}>
+                              👤 {getLocalized(med, 'patient')}
+                            </Text>
+                          </View>
+                        ) : null}
+                        {med.courseDays && (
+                          <View style={{ backgroundColor: '#f0fdf4', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, borderWidth: 1, borderColor: '#bbf7d0' }}>
+                            <Text style={{ fontSize: 10, color: '#166534', fontWeight: 'bold' }}>
+                              ⏳ {med.courseDays} {lang === 'hi' ? 'दिन कोर्स' : 'days course'}
+                            </Text>
+                          </View>
+                        )}
+                      </View>
                       <Text style={styles.agendaItemTime}>{med.time} • {medDose}</Text>
+
+                      {/* Course, Refill and Follow-up badges */}
+                      <View style={{ flexDirection: 'row', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
+                        {med.refillDate && (
+                          <TouchableOpacity 
+                            onPress={() => handleQuickRefill(med)}
+                            style={{ backgroundColor: '#fef2f2', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, borderWidth: 1, borderColor: '#fca5a5', flexDirection: 'row', alignItems: 'center', gap: 3 }}
+                          >
+                            <Text style={{ fontSize: 10, color: '#b91c1c', fontWeight: 'bold' }}>
+                              🔔 {lang === 'hi' ? `रीफिल: ${med.refillDate} (दवा लानी है)` : `Refill: ${med.refillDate}`}
+                            </Text>
+                          </TouchableOpacity>
+                        )}
+                        {med.doctorFollowupDate && (
+                          <View style={{ backgroundColor: '#eff6ff', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, borderWidth: 1, borderColor: '#bfdbfe', flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                            <Text style={{ fontSize: 10, color: '#1d4ed8', fontWeight: 'bold' }}>
+                              👨‍⚕️ {lang === 'hi' ? `डॉ. विज़िट: ${med.doctorFollowupDate}` : `Dr. Visit: ${med.doctorFollowupDate}`}
+                            </Text>
+                          </View>
+                        )}
+                      </View>
                     </View>
 
                     {med.imageUri && (
@@ -4664,8 +4933,12 @@ export default function App() {
                       <Text style={styles.rxSlipBtnText}>{t.rxSlip}</Text>
                     </TouchableOpacity>
 
+                    {/* Edit & Delete Medicine */}
+                    <TouchableOpacity onPress={() => openEditMedModal(med)} style={{ padding: 4, marginLeft: 4 }}>
+                      <Text style={{ fontSize: 15 }}>✏️</Text>
+                    </TouchableOpacity>
                     <TouchableOpacity onPress={() => deleteMedicine(med.id)} style={{ padding: 4, marginLeft: 4 }}>
-                      <Text style={{ fontSize: 16 }}>🗑️</Text>
+                      <Text style={{ fontSize: 15 }}>🗑️</Text>
                     </TouchableOpacity>
                   </View>
                 );
@@ -6009,11 +6282,116 @@ export default function App() {
               <Text style={styles.inputLabel}>{t.medDocPrompt}</Text>
               <TextInput 
                 style={styles.formInput} 
-                placeholder={lang === 'hi' ? 'डॉक्टर का नाम' : 'Doctor Name'} 
+                placeholder={lang === 'hi' ? 'डॉक्टर का नाम (उदा: डॉ. शर्मा)' : 'Doctor Name (e.g. Dr. Sharma)'} 
                 placeholderTextColor="#94a3b8"
                 value={newMedDoc} 
                 onChangeText={setNewMedDoc} 
               />
+
+              {/* Course Duration in Days */}
+              <View>
+                <Text style={styles.inputLabel}>
+                  ⏳ {lang === 'hi' ? 'दवा का कोर्स कितने दिन का है?' : 'Course Duration (Days):'}
+                </Text>
+                <TextInput 
+                  style={styles.formInput} 
+                  placeholder={lang === 'hi' ? 'उदा: 10' : 'e.g. 10'} 
+                  placeholderTextColor="#94a3b8"
+                  keyboardType="numeric"
+                  value={newMedCourseDays} 
+                  onChangeText={(val) => {
+                    setNewMedCourseDays(val);
+                    const daysNum = parseInt(val, 10);
+                    if (!isNaN(daysNum) && daysNum > 0) {
+                      const d = new Date();
+                      d.setDate(d.getDate() + daysNum);
+                      const monthsShort = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                      const dStr = d.getDate() < 10 ? `0${d.getDate()}` : `${d.getDate()}`;
+                      setNewMedFollowupDate(`${dStr} ${monthsShort[d.getMonth()]} ${d.getFullYear()}`);
+                    }
+                  }} 
+                />
+                <View style={{ flexDirection: 'row', gap: 6, marginTop: 4, flexWrap: 'wrap' }}>
+                  {['5', '7', '10', '15', '30', '60'].map(dVal => (
+                    <TouchableOpacity
+                      key={dVal}
+                      style={[styles.chip, newMedCourseDays === dVal && styles.chipActive]}
+                      onPress={() => {
+                        setNewMedCourseDays(dVal);
+                        const daysNum = parseInt(dVal, 10);
+                        const d = new Date();
+                        d.setDate(d.getDate() + daysNum);
+                        const monthsShort = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                        const dStr = d.getDate() < 10 ? `0${d.getDate()}` : `${d.getDate()}`;
+                        setNewMedFollowupDate(`${dStr} ${monthsShort[d.getMonth()]} ${d.getFullYear()}`);
+                      }}
+                    >
+                      <Text style={[styles.chipText, newMedCourseDays === dVal && styles.chipTextActive]}>
+                        {dVal} {lang === 'hi' ? 'दिन' : 'days'}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+
+              {/* Doctor Review / Follow-up Reminder Toggle */}
+              <View style={{ backgroundColor: '#eff6ff', borderRadius: 12, padding: 12, borderWidth: 1, borderColor: '#bfdbfe' }}>
+                <TouchableOpacity 
+                  style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}
+                  onPress={() => setNewMedFollowupNeeded(!newMedFollowupNeeded)}
+                >
+                  <Text style={{ fontSize: 20 }}>{newMedFollowupNeeded ? '☑️' : '⬜'}</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 13, fontWeight: 'bold', color: '#1e40af' }}>
+                      👨‍⚕️ {lang === 'hi' ? 'कोर्स पूरा होने पर डॉक्टर को दोबारा दिखाना है' : 'Doctor Review / Follow-up Checkup'}
+                    </Text>
+                    <Text style={{ fontSize: 11, color: '#3b82f6', marginTop: 2 }}>
+                      {lang === 'hi' ? 'कोर्स खत्म होने पर डॉक्टर के पास विज़िट का ऑटोमैटिक रिमाइंडर सेट होगा' : 'Auto reminder to visit doctor after course ends'}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+
+                {newMedFollowupNeeded && (
+                  <View style={{ marginTop: 10, paddingTop: 10, borderTopWidth: 1, borderTopColor: '#dbeafe' }}>
+                    <Text style={{ fontSize: 11, fontWeight: 'bold', color: '#1e40af', marginBottom: 4 }}>
+                      📅 {lang === 'hi' ? 'डॉक्टर को दिखाने की तारीख:' : 'Follow-up Consultation Date:'}
+                    </Text>
+                    <View style={{ flexDirection: 'row', gap: 8, alignItems: 'center' }}>
+                      <TextInput 
+                        style={[styles.formInput, { flex: 1, backgroundColor: '#fff' }]} 
+                        placeholder="09 Nov 2026" 
+                        placeholderTextColor="#94a3b8"
+                        value={newMedFollowupDate} 
+                        onChangeText={setNewMedFollowupDate} 
+                      />
+                      <TouchableOpacity 
+                        style={[styles.calendarPickerBtn, { backgroundColor: '#3b82f6' }]}
+                        onPress={() => openCalendar('med_followup', newMedFollowupDate)}
+                      >
+                        <Text style={{ fontSize: 18, color: '#fff' }}>📅</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                )}
+              </View>
+
+              {/* Medicine Refill / Stock Finished Reminder Toggle */}
+              <View style={{ backgroundColor: '#fef2f2', borderRadius: 12, padding: 12, borderWidth: 1, borderColor: '#fca5a5' }}>
+                <TouchableOpacity 
+                  style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}
+                  onPress={() => setNewMedRefillNeeded(!newMedRefillNeeded)}
+                >
+                  <Text style={{ fontSize: 20 }}>{newMedRefillNeeded ? '☑️' : '⬜'}</Text>
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 13, fontWeight: 'bold', color: '#991b1b' }}>
+                      🔔 {lang === 'hi' ? 'दवा खत्म होने से 1 दिन पहले रीफिल अलर्ट दें' : 'Alert 1 day before medicine finishes'}
+                    </Text>
+                    <Text style={{ fontSize: 11, color: '#b91c1c', marginTop: 2 }}>
+                      {lang === 'hi' ? 'दवा खत्म होने से पहले सूचित करेगा: "कल दवा खत्म हो जाएगी! आज नई दवा ले आएं"' : 'Alerts you: "Medicine will finish tomorrow! Bring new stock today"'}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              </View>
 
               <TouchableOpacity 
                 style={styles.photoUploadBtn} 
