@@ -1201,22 +1201,67 @@ const DEFAULT_MEDICINES = [
 const DEFAULT_REMINDERS = [
   {
     id: 901,
-    category: 'health',
-    linkedMedId: 101,
-    titleHi: '👨‍⚕️ डॉ. फॉलो-अप चेकअप: डॉ. शर्मा (बाबूजी)',
-    titleEn: '👨‍⚕️ Doctor Review: Dr. Sharma (Father)',
-    amount: '10 दिन का कोर्स पूरा',
-    date: '09 Nov',
+    category: 'task',
+    titleHi: '📌 बैंक जाकर चेक जमा करना व पासबुक अपडेट',
+    titleEn: '📌 Deposit Cheque & Update Passbook at Bank',
+    amount: 'सुबह 11:00 AM',
+    amountEn: '11:00 AM',
+    date: '30 Oct',
     urgent: true,
     paid: false
   },
   {
     id: 902,
+    category: 'bills',
+    titleHi: '⚡ बिजली का बिल भुगतान (BSES)',
+    titleEn: '⚡ Electricity Bill Payment (BSES)',
+    amount: '₹1,450',
+    date: '05 Nov',
+    urgent: true,
+    paid: false
+  },
+  {
+    id: 903,
+    category: 'bday',
+    titleHi: '🎂 रिया (गुड़िया) का जन्मदिन',
+    titleEn: "🎂 Riya's Birthday",
+    amount: 'वार्षिक जन्मदिन',
+    amountEn: 'Annual Birthday',
+    date: '14 Nov',
+    urgent: false,
+    paid: false
+  },
+  {
+    id: 904,
+    category: 'anniversary',
+    titleHi: '💐 माताजी व पिताजी की वैवाहिक वर्षगांठ',
+    titleEn: '💐 Parents Wedding Anniversary',
+    amount: 'वार्षिक सालगिरह',
+    amountEn: 'Annual Anniversary',
+    date: '25 Nov',
+    urgent: false,
+    paid: false
+  },
+  {
+    id: 905,
+    category: 'health',
+    linkedMedId: 101,
+    titleHi: '👨‍⚕️ डॉ. फॉलो-अप चेकअप: डॉ. शर्मा (बाबूजी)',
+    titleEn: '👨‍⚕️ Doctor Review: Dr. Sharma (Father)',
+    amount: '10 दिन का कोर्स पूरा',
+    amountEn: '10-day course completed',
+    date: '09 Nov',
+    urgent: true,
+    paid: false
+  },
+  {
+    id: 906,
     category: 'health',
     linkedMedId: 101,
     titleHi: '💊 दवा रीफिल अलर्ट: Metformin 500mg (बाबूजी)',
     titleEn: '💊 Refill Alert: Metformin 500mg (Father)',
     amount: 'कल दवा खत्म होगी',
+    amountEn: 'Finishes tomorrow',
     date: '08 Nov',
     urgent: true,
     paid: false
@@ -1353,17 +1398,18 @@ const DAILY_QUOTES = [
 ];
 
 
-  // Dynamic Time-Aware Greeting (Morning, Afternoon, Evening, Night)
-  const getDynamicGreeting = (l: 'hi' | 'en') => {
+  // Dynamic Time-Aware Greeting (Morning, Afternoon, Evening, Night) with User's Name
+  const getDynamicGreeting = (l: 'hi' | 'en', name?: string) => {
     const hour = new Date().getHours();
+    const displayName = name && name.trim() ? `, ${name.trim()}` : '';
     if (hour >= 5 && hour < 12) {
-      return l === 'hi' ? 'शुभ प्रभात • परिवार' : 'Good Morning • Family';
+      return l === 'hi' ? `शुभ प्रभात${displayName}!` : `Good Morning${displayName}!`;
     } else if (hour >= 12 && hour < 17) {
-      return l === 'hi' ? 'शुभ दोपहर • परिवार' : 'Good Afternoon • Family';
+      return l === 'hi' ? `शुभ दोपहर${displayName}!` : `Good Afternoon${displayName}!`;
     } else if (hour >= 17 && hour < 21) {
-      return l === 'hi' ? 'शुभ संध्या • परिवार' : 'Good Evening • Family';
+      return l === 'hi' ? `शुभ संध्या${displayName}!` : `Good Evening${displayName}!`;
     } else {
-      return l === 'hi' ? 'शुभ रात्रि • परिवार' : 'Good Night • Family';
+      return l === 'hi' ? `शुभ रात्रि${displayName}!` : `Good Night${displayName}!`;
     }
   };
 
@@ -1408,7 +1454,6 @@ export default function App() {
 
   // Device Lock State (Fingerprint / PIN / Screen Lock)
   const [isAppLocked, setIsAppLocked] = useState(true);
-  const [biometricAvailable, setBiometricAvailable] = useState(false);
 
   // User Onboarding & Profile State
   const [userProfile, setUserProfile] = useState<{ name: string; mobile: string; email: string } | null>(null);
@@ -1486,8 +1531,6 @@ export default function App() {
 
   // Active child helper
   const activeChild = schoolChildren.find(c => c.id === activeChildId) || schoolChildren[0] || null;
-  const [busETA, setBusETA] = useState<number>(8);
-  const [busStopIdx, setBusStopIdx] = useState<number>(2);
   const [cloudTripActive, setCloudTripActive] = useState<boolean>(false);
   const isTripActive = driverDutyActive || isBusSimulating || cloudTripActive;
   const setIsTripActive = (active: boolean) => setCloudTripActive(active);
@@ -1636,7 +1679,7 @@ export default function App() {
   const [newRemTitle, setNewRemTitle] = useState('');
   const [newRemAmount, setNewRemAmount] = useState('');
   const [newRemDate, setNewRemDate] = useState('05 Nov');
-  const [newRemCategory, setNewRemCategory] = useState<'bills' | 'bday' | 'other'>('bills');
+  const [newRemCategory, setNewRemCategory] = useState<'bills' | 'bday' | 'anniversary' | 'task' | 'health' | 'other'>('task');
   const [newRemUrgent, setNewRemUrgent] = useState(false);
 
   // Expense Form State
@@ -2851,22 +2894,25 @@ export default function App() {
     setIsAddDocModalOpen(true);
   };
 
-  // Open / Edit Reminder
-  const openAddReminderModal = () => {
+  // Open / Edit Reminder with Category & Date Pre-filling
+  const openAddReminderModal = (presetCategory?: 'bills' | 'bday' | 'anniversary' | 'task' | 'health' | 'other', presetDate?: string) => {
     setEditingReminderId(null);
     setNewRemTitle('');
     setNewRemAmount('');
-    setNewRemDate('05 Nov');
-    setNewRemCategory('bills');
-    setNewRemUrgent(false);
+    const now = new Date();
+    const monthsShort = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const dStr = `${now.getDate() < 10 ? '0' : ''}${now.getDate()} ${monthsShort[now.getMonth()]}`;
+    setNewRemDate(presetDate || dStr);
+    setNewRemCategory(presetCategory || 'task');
+    setNewRemUrgent(presetCategory === 'task');
     setIsAddReminderModalOpen(true);
   };
   const openEditReminderModal = (r: any) => {
     setEditingReminderId(r.id);
     setNewRemTitle(r.titleHi || r.titleEn || r.title || '');
-    setNewRemAmount((r.amount || '').replace(/[^0-9.]/g, ''));
+    setNewRemAmount(r.amount || '');
     setNewRemDate(r.date || '');
-    setNewRemCategory(r.category || 'bills');
+    setNewRemCategory(r.category || 'task');
     setNewRemUrgent(!!r.urgent);
     setIsAddReminderModalOpen(true);
   };
@@ -3925,17 +3971,33 @@ export default function App() {
 
   const handleAddNewReminder = async () => {
     if (!newRemTitle.trim()) {
-      Alert.alert('Notice', lang === 'hi' ? 'रिमाइंडर का नाम लिखें' : 'Please enter title');
+      Alert.alert('Notice', lang === 'hi' ? 'रिमाइंडर का शीर्षक या कार्य लिखें' : 'Please enter title or task');
       return;
     }
     const existing = upcomingReminders.find(r => r.id === editingReminderId);
+    let computedAmount = '';
+    if (newRemAmount && newRemAmount.trim()) {
+      const cleanAmt = newRemAmount.trim();
+      computedAmount = (newRemCategory === 'bills' && !cleanAmt.startsWith('₹')) ? `₹${cleanAmt}` : cleanAmt;
+    } else {
+      if (newRemCategory === 'task') {
+        computedAmount = lang === 'hi' ? 'आज का कार्य' : 'Daily Task';
+      } else if (newRemCategory === 'bday') {
+        computedAmount = lang === 'hi' ? 'वार्षिक जन्मदिन' : 'Annual Birthday';
+      } else if (newRemCategory === 'anniversary') {
+        computedAmount = lang === 'hi' ? 'वार्षिक सालगिरह' : 'Annual Anniversary';
+      } else {
+        computedAmount = existing?.amount || '';
+      }
+    }
+
     const savedRem = {
       id: editingReminderId || Date.now(),
       category: newRemCategory,
       titleHi: newRemTitle.trim(),
       titleEn: newRemTitle.trim(),
-      amount: newRemAmount ? `₹${newRemAmount}` : (existing?.amount || ''),
-      date: newRemDate || (existing?.date || '05 Nov'),
+      amount: computedAmount,
+      date: newRemDate || (existing?.date || '30 Oct'),
       urgent: newRemUrgent,
       paid: existing ? existing.paid : false
     };
@@ -3945,7 +4007,12 @@ export default function App() {
     setNewRemAmount('');
     setEditingReminderId(null);
     setIsAddReminderModalOpen(false);
-    Alert.alert(lang === 'hi' ? 'सफल' : 'Success', editingReminderId ? (lang === 'hi' ? 'रिमाइंडर अपडेट हो गया!' : 'Reminder updated!') : (lang === 'hi' ? 'नया रिमाइंडर सेट हो गया!' : 'Reminder saved!'));
+    Alert.alert(
+      lang === 'hi' ? 'सफल' : 'Success', 
+      editingReminderId 
+        ? (lang === 'hi' ? 'रिमाइंडर / कार्य अपडेट हो गया!' : 'Task / Reminder updated!') 
+        : (lang === 'hi' ? 'नया कार्य / रिमाइंडर सेट हो गया!' : 'Task / Reminder saved!')
+    );
   };
 
   const handleAddNewExpense = async () => {
@@ -3989,6 +4056,27 @@ export default function App() {
     };
     const updated = editingMemberId ? familyMembers.map(m => m.id === editingMemberId ? savedM : m) : [...familyMembers, savedM];
     await saveMembers(updated);
+
+    // Auto-create / Sync Birthday Reminder for Family Member
+    if (savedM.dob && savedM.dob.trim()) {
+      const bdayReminderId = 880000 + (savedM.id % 10000);
+      const otherRems = upcomingReminders.filter(r => r.id !== bdayReminderId && r.linkedMemberId !== savedM.id);
+      const bdayDatePart = savedM.dob.split(' ').slice(0, 2).join(' ');
+      const bdayReminder = {
+        id: bdayReminderId,
+        linkedMemberId: savedM.id,
+        category: 'bday',
+        titleHi: `🎂 ${savedM.name} का जन्मदिन`,
+        titleEn: `🎂 ${savedM.name}'s Birthday`,
+        amount: lang === 'hi' ? 'वार्षिक जन्मदिन' : 'Annual Birthday',
+        amountEn: 'Annual Birthday',
+        date: bdayDatePart,
+        urgent: false,
+        paid: false
+      };
+      await saveReminders([...otherRems, bdayReminder]);
+    }
+
     setNewMemberName('');
     setNewMemberPhone('');
     setNewMemberAge('');
@@ -4268,7 +4356,7 @@ export default function App() {
             <View style={styles.heroCard}>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.heroPre}>{getDynamicGreeting(lang)}</Text>
+                  <Text style={styles.heroPre}>{getDynamicGreeting(lang, userProfile?.name)}</Text>
                   <Text style={styles.heroMain}>{t.todayHero}</Text>
                 </View>
                 <View style={styles.dateTag}>
@@ -4284,6 +4372,99 @@ export default function App() {
                 </View>
                 <Text style={styles.quoteText}>"{getTodayQuote(lang)}"</Text>
               </View>
+            </View>
+
+            {/* ================= HOME WIDGET: TODAY'S TASKS & ACTIVITIES (सुबह की गतिविधियाँ व कार्य) ================= */}
+            <View>
+              <View style={styles.sectionHeaderRow}>
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                  <Text style={{ fontSize: 16 }}>📌</Text>
+                  <Text style={styles.sectionTitle}>{lang === 'hi' ? 'आज की मुख्य गतिविधियाँ व कार्य' : "Today's Tasks & Activities"}</Text>
+                </View>
+                <TouchableOpacity style={[styles.addSmallBtn, { backgroundColor: '#0284c7' }]} onPress={() => openAddReminderModal('task')}>
+                  <Text style={styles.addSmallBtnText}>{lang === 'hi' ? '+ कार्य जोड़ें' : '+ Add Task'}</Text>
+                </TouchableOpacity>
+              </View>
+
+              {(() => {
+                const now = new Date();
+                const monthsShort = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                const todayStr = `${now.getDate() < 10 ? '0' : ''}${now.getDate()} ${monthsShort[now.getMonth()]}`;
+                const todaysTasks = upcomingReminders.filter(r => 
+                  r.category === 'task' || 
+                  r.date === todayStr || 
+                  r.date === 'आज' || 
+                  r.date === 'Today' ||
+                  (r.category === 'bday' && r.date === todayStr) ||
+                  (r.category === 'anniversary' && r.date === todayStr)
+                );
+
+                if (todaysTasks.length === 0) {
+                  return (
+                    <View style={[styles.card, { alignItems: 'center', paddingVertical: 18, backgroundColor: '#f0f9ff', borderColor: '#bae6fd', borderWidth: 1 }]}>
+                      <Text style={{ fontSize: 28, marginBottom: 4 }}>📋</Text>
+                      <Text style={{ fontSize: 13, fontWeight: '700', color: '#0369a1' }}>
+                        {lang === 'hi' ? 'आज के लिए कोई विशेष कार्य शेड्यूल नहीं है' : 'No tasks scheduled for today'}
+                      </Text>
+                      <Text style={{ fontSize: 11, color: '#0284c7', marginTop: 2, textAlign: 'center' }}>
+                        {lang === 'hi' ? 'ऊपर "+ कार्य जोड़ें" दबाकर आज की गतिविधि या कल का काम सेट करें' : 'Tap "+ Add Task" above to plan today or upcoming activities'}
+                      </Text>
+                    </View>
+                  );
+                }
+
+                return (
+                  <View style={[styles.card, { backgroundColor: '#ffffff', borderColor: '#bae6fd', borderWidth: 1 }]}>
+                    <View style={{ gap: 8 }}>
+                      {todaysTasks.map(item => {
+                        const isDone = !!item.paid;
+                        const title = getLocalized(item, 'title');
+                        const isBdayOrAnniv = item.category === 'bday' || item.category === 'anniversary';
+                        return (
+                          <View 
+                            key={item.id} 
+                            style={{ 
+                              flexDirection: 'row', 
+                              alignItems: 'center', 
+                              justifyContent: 'space-between',
+                              paddingVertical: 6,
+                              borderBottomWidth: 1,
+                              borderBottomColor: '#f1f5f9'
+                            }}
+                          >
+                            <TouchableOpacity
+                              style={[styles.checkCircle, isDone && styles.checkCircleDone, isBdayOrAnniv && { borderColor: '#f43f5e' }]}
+                              onPress={() => toggleReminderPaid(item.id)}
+                            >
+                              <Text style={{ color: '#fff', fontSize: 13, fontWeight: 'bold' }}>{isDone ? '✓' : isBdayOrAnniv ? '🎉' : ''}</Text>
+                            </TouchableOpacity>
+
+                            <View style={{ flex: 1, marginHorizontal: 8 }}>
+                              <Text style={[{ fontSize: 13, fontWeight: 'bold', color: '#0f172a' }, isDone && styles.strike]}>
+                                {title}
+                              </Text>
+                              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 2 }}>
+                                <View style={{ backgroundColor: item.category === 'bday' ? '#fdf2f8' : item.category === 'anniversary' ? '#fff1f2' : '#e0f2fe', paddingHorizontal: 6, paddingVertical: 1.5, borderRadius: 6 }}>
+                                  <Text style={{ fontSize: 9, fontWeight: 'bold', color: item.category === 'bday' ? '#db2777' : item.category === 'anniversary' ? '#e11d48' : '#0284c7' }}>
+                                    {item.category === 'bday' ? (lang === 'hi' ? '🎂 जन्मदिन' : '🎂 Birthday') : item.category === 'anniversary' ? (lang === 'hi' ? '💐 सालगिरह' : '💐 Anniversary') : (lang === 'hi' ? '📌 आज का कार्य' : '📌 Daily Task')}
+                                  </Text>
+                                </View>
+                                <Text style={{ fontSize: 11, color: '#64748b' }}>
+                                  {lang === 'en' && item.amountEn ? item.amountEn : tr(item.amount)}
+                                </Text>
+                              </View>
+                            </View>
+
+                            <TouchableOpacity onPress={() => openEditReminderModal(item)} style={{ padding: 4 }}>
+                              <Text style={{ fontSize: 14 }}>✏️</Text>
+                            </TouchableOpacity>
+                          </View>
+                        );
+                      })}
+                    </View>
+                  </View>
+                );
+              })()}
             </View>
 
             {/* Today's Agenda + Add Medicine Button */}
@@ -5031,7 +5212,22 @@ export default function App() {
                     </View>
 
                     <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 6, paddingLeft: 38 }}>
-                      <Text style={styles.cardSub}>{t.dueDateLabel}: {rem.date}</Text>
+                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                        <Text style={styles.cardSub}>{t.dueDateLabel}: {rem.date}</Text>
+                        {rem.category === 'bday' ? (
+                          <View style={{ backgroundColor: '#fdf2f8', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 }}>
+                            <Text style={{ color: '#db2777', fontSize: 10, fontWeight: 'bold' }}>🎂 {lang === 'hi' ? 'जन्मदिन' : 'BIRTHDAY'}</Text>
+                          </View>
+                        ) : rem.category === 'anniversary' ? (
+                          <View style={{ backgroundColor: '#fff1f2', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 }}>
+                            <Text style={{ color: '#e11d48', fontSize: 10, fontWeight: 'bold' }}>💐 {lang === 'hi' ? 'सालगिरह' : 'ANNIVERSARY'}</Text>
+                          </View>
+                        ) : rem.category === 'task' ? (
+                          <View style={{ backgroundColor: '#e0f2fe', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6 }}>
+                            <Text style={{ color: '#0369a1', fontSize: 10, fontWeight: 'bold' }}>📌 {lang === 'hi' ? 'कार्य' : 'TASK'}</Text>
+                          </View>
+                        ) : null}
+                      </View>
                       {isPaid ? (
                         <View style={{ backgroundColor: '#dcfce7', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 }}>
                           <Text style={{ color: '#16a34a', fontSize: 11, fontWeight: 'bold' }}>✓ {lang === 'hi' ? 'चुकता (Paid)' : 'Paid'}</Text>
@@ -6810,10 +7006,54 @@ export default function App() {
 
             <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingBottom: 24 }}>
             <View style={{ gap: 12, marginVertical: 14 }}>
-              <Text style={styles.inputLabel}>{t.remTitlePrompt}</Text>
+              {/* Category Selector Chips */}
+              <View>
+                <Text style={styles.inputLabel}>
+                  🏷️ {lang === 'hi' ? 'रिमाइंडर प्रकार (श्रेणी चुनें):' : 'Select Reminder Category:'}
+                </Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6, marginVertical: 4 }}>
+                  {[
+                    { key: 'task', icon: '📌', labelHi: 'दैनिक कार्य / गतिविधि', labelEn: 'Daily Task / Activity' },
+                    { key: 'bday', icon: '🎂', labelHi: 'जन्मदिन', labelEn: 'Birthday' },
+                    { key: 'anniversary', icon: '💐', labelHi: 'सालगिरह', labelEn: 'Anniversary' },
+                    { key: 'bills', icon: '⚡', labelHi: 'बिल व फीस', labelEn: 'Bills & Fees' },
+                    { key: 'health', icon: '🩺', labelHi: 'स्वास्थ्य / डॉक्टर', labelEn: 'Doctor / Health' },
+                    { key: 'other', icon: '🔔', labelHi: 'अन्य', labelEn: 'Other' }
+                  ].map(cat => (
+                    <TouchableOpacity
+                      key={cat.key}
+                      style={[styles.chip, newRemCategory === cat.key && styles.chipActive]}
+                      onPress={() => setNewRemCategory(cat.key as any)}
+                    >
+                      <Text style={[styles.chipText, newRemCategory === cat.key && styles.chipTextActive]}>
+                        {cat.icon} {lang === 'hi' ? cat.labelHi : cat.labelEn}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+
+              {/* Dynamic Title Input */}
+              <Text style={styles.inputLabel}>
+                {newRemCategory === 'task' 
+                  ? (lang === 'hi' ? '📌 आज या किस दिन क्या करना है? (कार्य लिखें):' : '📌 What needs to be done? (Task Details):')
+                  : newRemCategory === 'bday'
+                    ? (lang === 'hi' ? '🎂 किसका जन्मदिन है? (नाम लिखें):' : "🎂 Whose Birthday? (Name):")
+                    : newRemCategory === 'anniversary'
+                      ? (lang === 'hi' ? '💐 किसकी सालगिरह है? (नाम लिखें):' : "💐 Whose Anniversary? (Name):")
+                      : t.remTitlePrompt}
+              </Text>
               <TextInput 
                 style={styles.formInput} 
-                placeholder="Electricity Bill / Gas / School Fee" 
+                placeholder={
+                  newRemCategory === 'task'
+                    ? (lang === 'hi' ? 'उदा: बैंक जाकर चेक जमा करना / कार सर्विसिंग' : 'e.g. Deposit cheque at bank / Car service')
+                    : newRemCategory === 'bday'
+                      ? (lang === 'hi' ? 'उदा: राहुल का जन्मदिन (बर्थडे पार्टी)' : "e.g. Rahul's Birthday Party")
+                      : newRemCategory === 'anniversary'
+                        ? (lang === 'hi' ? 'उदा: मम्मी-पापा की वैवाहिक वर्षगांठ' : "e.g. Mom & Dad 25th Anniversary")
+                        : (lang === 'hi' ? 'उदा: बिजली का बिल / पानी / स्कूल फीस' : 'e.g. Electricity Bill / Gas / School Fee')
+                }
                 placeholderTextColor="#94a3b8"
                 value={newRemTitle} 
                 onChangeText={setNewRemTitle} 
@@ -6821,18 +7061,32 @@ export default function App() {
 
               <View style={{ flexDirection: 'row', gap: 10 }}>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.inputLabel}>{t.remAmountPrompt}</Text>
+                  <Text style={styles.inputLabel}>
+                    {newRemCategory === 'task'
+                      ? (lang === 'hi' ? '⏰ समय / टिप्पणी (उदा: 11 AM)' : '⏰ Time / Note (e.g. 11 AM)')
+                      : newRemCategory === 'bday' || newRemCategory === 'anniversary'
+                        ? (lang === 'hi' ? '🎁 उपहार / बजट (वैकल्पिक)' : '🎁 Gift / Budget (Optional)')
+                        : t.remAmountPrompt}
+                  </Text>
                   <TextInput 
                     style={styles.formInput} 
-                    placeholder="₹1,200" 
+                    placeholder={
+                      newRemCategory === 'task' 
+                        ? (lang === 'hi' ? '11:00 AM' : '11:00 AM') 
+                        : (lang === 'hi' ? '₹1,500' : '₹1,500')
+                    }
                     placeholderTextColor="#94a3b8"
-                    keyboardType="numeric"
+                    keyboardType={newRemCategory === 'task' ? 'default' : 'numeric'}
                     value={newRemAmount} 
                     onChangeText={setNewRemAmount} 
                   />
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.inputLabel}>{t.remDatePrompt}</Text>
+                  <Text style={styles.inputLabel}>
+                    {newRemCategory === 'task'
+                      ? (lang === 'hi' ? '📅 किस तारीख को करना है:' : '📅 Scheduled Date:')
+                      : t.remDatePrompt}
+                  </Text>
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                     <TextInput 
                       style={[styles.formInput, { flex: 1 }]} 
@@ -6852,13 +7106,15 @@ export default function App() {
               </View>
 
               <TouchableOpacity 
-                style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 6 }}
+                style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 4 }}
                 onPress={() => setNewRemUrgent(p => !p)}
               >
                 <View style={[styles.checkCircle, newRemUrgent && { backgroundColor: '#ef4444', borderColor: '#ef4444' }]}>
                   <Text style={{ color: '#fff', fontSize: 13, fontWeight: 'bold' }}>{newRemUrgent ? '✓' : ''}</Text>
                 </View>
-                <Text style={{ fontSize: 13, fontWeight: 'bold', color: '#0f172a' }}>{t.remUrgentPrompt}</Text>
+                <Text style={{ fontSize: 13, fontWeight: 'bold', color: '#0f172a' }}>
+                  {newRemCategory === 'task' ? (lang === 'hi' ? '⚡ अति-महत्वपूर्ण कार्य (Urgent)' : '⚡ Urgent / Priority Task') : t.remUrgentPrompt}
+                </Text>
               </TouchableOpacity>
             </View>
 
