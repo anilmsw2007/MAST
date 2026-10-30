@@ -17,7 +17,8 @@ import {
   Vibration,
   Linking,
   NativeSyntheticEvent,
-  NativeScrollEvent
+  NativeScrollEvent,
+  PanResponder
 } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
@@ -1278,8 +1279,8 @@ export default function App() {
   // Driver Profile & Simple State-District Hierarchy State
   const [driverNameInput, setDriverNameInput] = useState('');
   const [driverPhoneInput, setDriverPhoneInput] = useState('');
-  const [driverState, setDriverState] = useState('दिल्ली (Delhi)');
-  const [driverDistrict, setDriverDistrict] = useState('नई दिल्ली (New Delhi)');
+  const [driverState, setDriverState] = useState('');
+  const [driverDistrict, setDriverDistrict] = useState('');
   const [registeredSchools, setRegisteredSchools] = useState<string[]>([]);
   const [driverSelectedSchool, setDriverSelectedSchool] = useState('');
   const [driverSelectedBus, setDriverSelectedBus] = useState('');
@@ -1316,8 +1317,8 @@ export default function App() {
   const driverDutyIntervalRef = useRef<any>(null);
 
   // Parent State & District Hierarchy for Adding Child
-  const [parentState, setParentState] = useState('दिल्ली (Delhi)');
-  const [parentDistrict, setParentDistrict] = useState('नई दिल्ली (New Delhi)');
+  const [parentState, setParentState] = useState('');
+  const [parentDistrict, setParentDistrict] = useState('');
 
   // Searchable Dropdown Picker Modal State
   const [isLocationPickerOpen, setIsLocationPickerOpen] = useState(false);
@@ -1444,6 +1445,7 @@ export default function App() {
   const [newMedDose, setNewMedDose] = useState('');
   const [newMedDoc, setNewMedDoc] = useState('');
   const [newMedPhoto, setNewMedPhoto] = useState<string | null>(null);
+  const [newMedPatient, setNewMedPatient] = useState('स्वयं (Self)');
 
   const [newVaultName, setNewVaultName] = useState('');
   const [newVaultPrice, setNewVaultPrice] = useState('');
@@ -1471,6 +1473,8 @@ export default function App() {
   const [calendarViewYear, setCalendarViewYear] = useState<number>(new Date().getFullYear());
   const [calendarViewMonth, setCalendarViewMonth] = useState<number>(new Date().getMonth());
   const [calendarSelectedDate, setCalendarSelectedDate] = useState<Date>(new Date());
+  const [calendarPickerMode, setCalendarPickerMode] = useState<'day' | 'year' | 'month'>('day');
+  const [calendarYearPickerPage, setCalendarYearPickerPage] = useState<number>(() => Math.floor(new Date().getFullYear() / 12) * 12);
 
   // Additional Date States for Forms
   const [newExpDate, setNewExpDate] = useState('आज');
@@ -1643,6 +1647,18 @@ export default function App() {
 
         const storedChildren = await AsyncStorage.getItem('@mast_v7_school_children');
         if (storedChildren) setSchoolChildren(JSON.parse(storedChildren));
+
+        const storedParentState = await AsyncStorage.getItem('@mast_v7_parent_state');
+        if (storedParentState) setParentState(storedParentState);
+
+        const storedParentDistrict = await AsyncStorage.getItem('@mast_v7_parent_district');
+        if (storedParentDistrict) setParentDistrict(storedParentDistrict);
+
+        const storedDriverState = await AsyncStorage.getItem('@mast_v7_driver_state');
+        if (storedDriverState) setDriverState(storedDriverState);
+
+        const storedDriverDistrict = await AsyncStorage.getItem('@mast_v7_driver_district');
+        if (storedDriverDistrict) setDriverDistrict(storedDriverDistrict);
       } catch (err) {
         console.log('Error reading storage', err);
       }
@@ -2373,15 +2389,21 @@ export default function App() {
       if (pickerTarget === 'parent') {
         setParentState(item);
         setParentDistrict(firstDistrict);
+        AsyncStorage.setItem('@mast_v7_parent_state', item);
+        if (firstDistrict) AsyncStorage.setItem('@mast_v7_parent_district', firstDistrict);
       } else {
         setDriverState(item);
         setDriverDistrict(firstDistrict);
+        AsyncStorage.setItem('@mast_v7_driver_state', item);
+        if (firstDistrict) AsyncStorage.setItem('@mast_v7_driver_district', firstDistrict);
       }
     } else {
       if (pickerTarget === 'parent') {
         setParentDistrict(item);
+        AsyncStorage.setItem('@mast_v7_parent_district', item);
       } else {
         setDriverDistrict(item);
+        AsyncStorage.setItem('@mast_v7_driver_district', item);
       }
     }
     setIsLocationPickerOpen(false);
@@ -2402,6 +2424,10 @@ export default function App() {
 
   // Driver Login, Bus Switching & Safe Driving Duty Handlers
   const handleDriverLogin = async (busNo: string, school: string) => {
+    if (!driverState || !driverDistrict) {
+      Alert.alert('Notice', lang === 'hi' ? 'कृपया पहले अपना राज्य और ज़िला चुनें' : 'Please select your State and District first');
+      return;
+    }
     const chosenBus = busNo.trim() || 'Bus #12';
     const busKey = generateUniversalBusKey(driverState, driverDistrict, school, chosenBus);
     const profile = {
@@ -2807,6 +2833,8 @@ export default function App() {
     setCalendarSelectedDate(initDate);
     setCalendarViewYear(initDate.getFullYear());
     setCalendarViewMonth(initDate.getMonth());
+    setCalendarPickerMode('day');
+    setCalendarYearPickerPage(Math.floor(initDate.getFullYear() / 12) * 12);
     setCalendarTarget(target);
   };
 
@@ -2843,7 +2871,7 @@ export default function App() {
     setCalendarTarget(null);
   };
 
-  // Reusable Calendar Overlay Card Component
+  // Reusable Calendar Overlay Card Component with Swipe & Direct Year/Month Picker
   const renderCalendarCard = () => {
     const monthNamesHi = [
       'जनवरी', 'फ़रवरी', 'मार्च', 'अप्रैल', 'मई', 'जून',
@@ -2854,13 +2882,7 @@ export default function App() {
       'July', 'August', 'September', 'October', 'November', 'December'
     ];
     const weekDaysHi = ['रवि', 'सोम', 'मंगल', 'बुध', 'गुरु', 'शुक्र', 'शनि'];
-    
-    const currentMonthLabel = monthNamesHi[calendarViewMonth] + ' (' + monthNamesEn[calendarViewMonth].slice(0, 3) + ') ' + calendarViewYear;
-    
-    // Calendar calculation
-    const firstDay = new Date(calendarViewYear, calendarViewMonth, 1).getDay();
-    const daysInMonth = new Date(calendarViewYear, calendarViewMonth + 1, 0).getDate();
-    
+
     const prevMonth = () => {
       if (calendarViewMonth === 0) {
         setCalendarViewMonth(11);
@@ -2879,13 +2901,28 @@ export default function App() {
       }
     };
 
-    const prevYear = (delta: number = 1) => {
-      setCalendarViewYear(calendarViewYear - delta);
-    };
+    // PanResponder for Left/Right Swiping on Calendar
+    const panResponder = useRef(
+      PanResponder.create({
+        onStartShouldSetPanResponder: () => false,
+        onMoveShouldSetPanResponder: (_, gestureState) => {
+          return Math.abs(gestureState.dx) > 25 && Math.abs(gestureState.dy) < 30;
+        },
+        onPanResponderRelease: (_, gestureState) => {
+          if (gestureState.dx > 40) {
+            // Swiped Right -> Previous Month
+            prevMonth();
+          } else if (gestureState.dx < -40) {
+            // Swiped Left -> Next Month
+            nextMonth();
+          }
+        }
+      })
+    ).current;
 
-    const nextYear = (delta: number = 1) => {
-      setCalendarViewYear(calendarViewYear + delta);
-    };
+    // Calendar calculation
+    const firstDay = new Date(calendarViewYear, calendarViewMonth, 1).getDay();
+    const daysInMonth = new Date(calendarViewYear, calendarViewMonth + 1, 0).getDate();
 
     const today = new Date();
     const isSelected = (d: number) => {
@@ -2907,6 +2944,9 @@ export default function App() {
     const blanks = Array.from({ length: firstDay }, (_, i) => i);
     const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
+    // Year selection range (12 years per view)
+    const yearRange = Array.from({ length: 12 }, (_, i) => calendarYearPickerPage + i);
+
     return (
       <View style={styles.calendarModalOverlay}>
         <View style={styles.calendarCard}>
@@ -2920,64 +2960,177 @@ export default function App() {
             </TouchableOpacity>
           </View>
 
-          {/* Year & Month Navigator */}
+          {/* Swipe Hint */}
+          <Text style={{ fontSize: 11, color: '#94a3b8', textAlign: 'center', marginBottom: 6 }}>
+            {lang === 'hi' ? '👉 स्वाइप करें (अगला/पिछला महीना) या वर्ष पर टैप करें' : '👉 Swipe left/right for months or tap year'}
+          </Text>
+
+          {/* Year & Month Header / Mode Selector */}
           <View style={styles.calendarNavRow}>
-            <TouchableOpacity onPress={() => prevYear(1)} style={styles.calendarNavBtn}>
-              <Text style={styles.calendarNavBtnText}>« -1 वर्ष</Text>
-            </TouchableOpacity>
             <TouchableOpacity onPress={prevMonth} style={styles.calendarNavBtnRound}>
               <Text style={styles.calendarNavArrow}>‹</Text>
             </TouchableOpacity>
-            <Text style={styles.calendarMonthText}>{currentMonthLabel}</Text>
+
+            <View style={{ flexDirection: 'row', gap: 6 }}>
+              <TouchableOpacity
+                style={[styles.calendarModeSelectorPill, calendarPickerMode === 'month' && styles.calendarModeSelectorPillActive]}
+                onPress={() => setCalendarPickerMode(calendarPickerMode === 'month' ? 'day' : 'month')}
+              >
+                <Text style={[styles.calendarModeSelectorText, calendarPickerMode === 'month' && styles.calendarModeSelectorTextActive]}>
+                  {monthNamesHi[calendarViewMonth]} ▼
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.calendarModeSelectorPill, calendarPickerMode === 'year' && styles.calendarModeSelectorPillActive]}
+                onPress={() => setCalendarPickerMode(calendarPickerMode === 'year' ? 'day' : 'year')}
+              >
+                <Text style={[styles.calendarModeSelectorText, calendarPickerMode === 'year' && styles.calendarModeSelectorTextActive]}>
+                  {calendarViewYear} ▼
+                </Text>
+              </TouchableOpacity>
+            </View>
+
             <TouchableOpacity onPress={nextMonth} style={styles.calendarNavBtnRound}>
               <Text style={styles.calendarNavArrow}>›</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={() => nextYear(1)} style={styles.calendarNavBtn}>
-              <Text style={styles.calendarNavBtnText}>+1 वर्ष »</Text>
-            </TouchableOpacity>
           </View>
 
-          {/* Weekday labels */}
-          <View style={styles.calendarWeekRow}>
-            {weekDaysHi.map(d => (
-              <Text key={d} style={styles.calendarWeekText}>{d}</Text>
-            ))}
-          </View>
-
-          {/* Days Grid */}
-          <View style={styles.calendarGrid}>
-            {blanks.map(b => (
-              <View key={'b-' + b} style={styles.calendarDayCell} />
-            ))}
-            {days.map(d => {
-              const selected = isSelected(d);
-              const todayMark = isToday(d);
-              return (
+          {/* VIEW MODE 1: DIRECT YEAR PICKER (1940 to 2050+) */}
+          {calendarPickerMode === 'year' ? (
+            <View style={{ marginVertical: 8 }}>
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
                 <TouchableOpacity
-                  key={'d-' + d}
-                  style={[
-                    styles.calendarDayCell,
-                    selected && styles.calendarDaySelected,
-                    todayMark && !selected && styles.calendarDayToday
-                  ]}
-                  onPress={() => {
-                    const picked = new Date(calendarViewYear, calendarViewMonth, d);
-                    setCalendarSelectedDate(picked);
-                  }}
+                  style={styles.calendarNavBtn}
+                  onPress={() => setCalendarYearPickerPage(p => p - 12)}
                 >
-                  <Text
-                    style={[
-                      styles.calendarDayText,
-                      selected && styles.calendarDayTextSelected,
-                      todayMark && !selected && styles.calendarDayTextToday
-                    ]}
-                  >
-                    {d}
-                  </Text>
+                  <Text style={styles.calendarNavBtnText}>« {calendarYearPickerPage - 12} - {calendarYearPickerPage - 1}</Text>
                 </TouchableOpacity>
-              );
-            })}
-          </View>
+                <Text style={{ fontSize: 13, fontWeight: 'bold', color: '#0f172a' }}>
+                  {calendarYearPickerPage} - {calendarYearPickerPage + 11}
+                </Text>
+                <TouchableOpacity
+                  style={styles.calendarNavBtn}
+                  onPress={() => setCalendarYearPickerPage(p => p + 12)}
+                >
+                  <Text style={styles.calendarNavBtnText}>{calendarYearPickerPage + 12} - {calendarYearPickerPage + 23} »</Text>
+                </TouchableOpacity>
+              </View>
+
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, justifyContent: 'center' }}>
+                {yearRange.map(yr => {
+                  const isCurrentYear = yr === calendarViewYear;
+                  return (
+                    <TouchableOpacity
+                      key={yr}
+                      style={[
+                        styles.calendarYearChip,
+                        isCurrentYear && styles.calendarYearChipActive
+                      ]}
+                      onPress={() => {
+                        setCalendarViewYear(yr);
+                        setCalendarPickerMode('day');
+                      }}
+                    >
+                      <Text style={[styles.calendarYearChipText, isCurrentYear && styles.calendarYearChipTextActive]}>
+                        {yr}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+
+              <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 6, marginTop: 12 }}>
+                {[1960, 1980, 2000, 2026, 2030].map(quickYr => (
+                  <TouchableOpacity
+                    key={quickYr}
+                    style={{ backgroundColor: '#f1f5f9', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 }}
+                    onPress={() => {
+                      setCalendarViewYear(quickYr);
+                      setCalendarYearPickerPage(Math.floor(quickYr / 12) * 12);
+                      setCalendarPickerMode('day');
+                    }}
+                  >
+                    <Text style={{ fontSize: 11, color: '#475569', fontWeight: 'bold' }}>{quickYr}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          ) : calendarPickerMode === 'month' ? (
+            /* VIEW MODE 2: DIRECT MONTH PICKER */
+            <View style={{ marginVertical: 8 }}>
+              <Text style={{ fontSize: 13, fontWeight: 'bold', color: '#0f172a', textAlign: 'center', marginBottom: 10 }}>
+                {lang === 'hi' ? 'महीना चुनें:' : 'Select Month:'}
+              </Text>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, justifyContent: 'center' }}>
+                {monthNamesHi.map((mName, mIdx) => {
+                  const isCurrentMonth = mIdx === calendarViewMonth;
+                  return (
+                    <TouchableOpacity
+                      key={mName}
+                      style={[
+                        styles.calendarMonthChip,
+                        isCurrentMonth && styles.calendarMonthChipActive
+                      ]}
+                      onPress={() => {
+                        setCalendarViewMonth(mIdx);
+                        setCalendarPickerMode('day');
+                      }}
+                    >
+                      <Text style={[styles.calendarMonthChipText, isCurrentMonth && styles.calendarMonthChipTextActive]}>
+                        {mName}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </View>
+          ) : (
+            /* VIEW MODE 3: STANDARD DAY GRID WITH SWIPE GESTURE */
+            <View {...panResponder.panHandlers}>
+              {/* Weekday labels */}
+              <View style={styles.calendarWeekRow}>
+                {weekDaysHi.map(d => (
+                  <Text key={d} style={styles.calendarWeekText}>{d}</Text>
+                ))}
+              </View>
+
+              {/* Days Grid */}
+              <View style={styles.calendarGrid}>
+                {blanks.map(b => (
+                  <View key={'b-' + b} style={styles.calendarDayCell} />
+                ))}
+                {days.map(d => {
+                  const selected = isSelected(d);
+                  const todayMark = isToday(d);
+                  return (
+                    <TouchableOpacity
+                      key={'d-' + d}
+                      style={[
+                        styles.calendarDayCell,
+                        selected && styles.calendarDaySelected,
+                        todayMark && !selected && styles.calendarDayToday
+                      ]}
+                      onPress={() => {
+                        const picked = new Date(calendarViewYear, calendarViewMonth, d);
+                        setCalendarSelectedDate(picked);
+                      }}
+                    >
+                      <Text
+                        style={[
+                          styles.calendarDayText,
+                          selected && styles.calendarDayTextSelected,
+                          todayMark && !selected && styles.calendarDayTextToday
+                        ]}
+                      >
+                        {d}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </View>
+          )}
 
           {/* Quick jump chips */}
           <View style={styles.calendarQuickRow}>
@@ -2988,6 +3141,7 @@ export default function App() {
                 setCalendarSelectedDate(now);
                 setCalendarViewYear(now.getFullYear());
                 setCalendarViewMonth(now.getMonth());
+                setCalendarPickerMode('day');
               }}
             >
               <Text style={styles.calendarQuickChipText}>आज (Today)</Text>
@@ -3000,6 +3154,7 @@ export default function App() {
                 setCalendarSelectedDate(tmrw);
                 setCalendarViewYear(tmrw.getFullYear());
                 setCalendarViewMonth(tmrw.getMonth());
+                setCalendarPickerMode('day');
               }}
             >
               <Text style={styles.calendarQuickChipText}>कल (Tomorrow)</Text>
@@ -3012,6 +3167,7 @@ export default function App() {
                 setCalendarSelectedDate(n1y);
                 setCalendarViewYear(n1y.getFullYear());
                 setCalendarViewMonth(n1y.getMonth());
+                setCalendarPickerMode('day');
               }}
             >
               <Text style={styles.calendarQuickChipText}>+1 वर्ष</Text>
@@ -3024,6 +3180,7 @@ export default function App() {
                 setCalendarSelectedDate(n5y);
                 setCalendarViewYear(n5y.getFullYear());
                 setCalendarViewMonth(n5y.getMonth());
+                setCalendarPickerMode('day');
               }}
             >
               <Text style={styles.calendarQuickChipText}>+5 वर्ष</Text>
@@ -3054,6 +3211,7 @@ export default function App() {
       Alert.alert('Notice', lang === 'hi' ? 'कृपया दवाई का नाम लिखें' : 'Please enter medicine name');
       return;
     }
+    const patientName = newMedPatient || (lang === 'hi' ? 'स्वयं (Self)' : 'Self');
     const newEntry = {
       id: Date.now(),
       nameHi: newMedName.trim(),
@@ -3065,8 +3223,8 @@ export default function App() {
       doctorEn: newMedDoc || 'Dr. Family Physician',
       hospitalHi: 'पारिवारिक क्लिनिक',
       hospitalEn: 'Family Clinic',
-      patientHi: 'परिवार सदस्य',
-      patientEn: 'Family Member',
+      patientHi: patientName,
+      patientEn: patientName,
       date: lang === 'hi' ? 'आज' : 'Today',
       imageUri: newMedPhoto
     };
@@ -3547,7 +3705,16 @@ export default function App() {
                         <Text style={{ color: '#fff', fontSize: 14, fontWeight: 'bold' }}>{isTaken ? '✓' : ''}</Text>
                       </TouchableOpacity>
                       <View style={{ flex: 1 }}>
-                        <Text style={[styles.agendaItemTitle, isTaken && styles.strike]}>{medName}</Text>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                          <Text style={[styles.agendaItemTitle, isTaken && styles.strike]}>{medName}</Text>
+                          {(med.patientHi || med.patientEn) ? (
+                            <View style={{ backgroundColor: '#fff7ed', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, borderWidth: 1, borderColor: '#fed7aa' }}>
+                              <Text style={{ fontSize: 10, color: '#c2410c', fontWeight: 'bold' }}>
+                                👤 {getLocalized(med, 'patient')}
+                              </Text>
+                            </View>
+                          ) : null}
+                        </View>
                         <Text style={styles.agendaItemTime}>{med.time} • {medDose}</Text>
                       </View>
 
@@ -5009,6 +5176,37 @@ export default function App() {
             </View>
 
             <View style={{ gap: 12, marginVertical: 14 }}>
+              {/* Member / Patient Selector */}
+              <View>
+                <Text style={styles.inputLabel}>
+                  👤 {lang === 'hi' ? 'यह दवा किसके लिए है? (परिवार का सदस्य चुनें):' : 'Who is this medicine for? (Select Member):'}
+                </Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6, marginVertical: 4 }}>
+                  {[
+                    ...(userProfile?.name ? [`${userProfile.name} (स्वयं)`] : ['स्वयं (Self)']),
+                    ...familyMembers.map((m: any) => m.name || m.nameHi || m.nameEn).filter(Boolean),
+                    'दादाजी', 'दादीजी', 'पिताजी', 'माताजी', 'बच्चे'
+                  ].filter((v, i, a) => a.indexOf(v) === i).map((person) => (
+                    <TouchableOpacity
+                      key={person}
+                      style={[styles.chip, newMedPatient === person && styles.chipActive]}
+                      onPress={() => setNewMedPatient(person)}
+                    >
+                      <Text style={[styles.chipText, newMedPatient === person && styles.chipTextActive]}>
+                        👤 {person}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+                <TextInput
+                  style={[styles.formInput, { marginTop: 4 }]}
+                  placeholder={lang === 'hi' ? 'या अन्य सदस्य का नाम लिखें (उदा: दादाजी / रोहन)' : 'Or enter member name (e.g. Grandfather / Rohan)'}
+                  placeholderTextColor="#94a3b8"
+                  value={newMedPatient}
+                  onChangeText={setNewMedPatient}
+                />
+              </View>
+
               <Text style={styles.inputLabel}>{t.medNamePrompt}</Text>
               <TextInput 
                 style={styles.formInput} 
@@ -6654,6 +6852,75 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: '#ea580c',
+  },
+  calendarModeSelectorPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 12,
+    backgroundColor: '#f8fafc',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+  },
+  calendarModeSelectorPillActive: {
+    backgroundColor: '#fff7ed',
+    borderColor: '#fed7aa',
+  },
+  calendarModeSelectorText: {
+    fontSize: 13,
+    fontWeight: 'bold',
+    color: '#334155',
+  },
+  calendarModeSelectorTextActive: {
+    color: '#ea580c',
+  },
+  calendarYearChip: {
+    width: '30%',
+    paddingVertical: 12,
+    borderRadius: 12,
+    backgroundColor: '#f8fafc',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    alignItems: 'center',
+    marginVertical: 4,
+  },
+  calendarYearChipActive: {
+    backgroundColor: '#ea580c',
+    borderColor: '#ea580c',
+  },
+  calendarYearChipText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#334155',
+  },
+  calendarYearChipTextActive: {
+    color: '#ffffff',
+    fontWeight: 'bold',
+  },
+  calendarMonthChip: {
+    width: '30%',
+    paddingVertical: 12,
+    borderRadius: 12,
+    backgroundColor: '#f8fafc',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    alignItems: 'center',
+    marginVertical: 4,
+  },
+  calendarMonthChipActive: {
+    backgroundColor: '#ea580c',
+    borderColor: '#ea580c',
+  },
+  calendarMonthChipText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#334155',
+  },
+  calendarMonthChipTextActive: {
+    color: '#ffffff',
+    fontWeight: 'bold',
   },
   calendarMonthText: {
     fontSize: 14,
