@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="hi" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>MAST - सब ठीक रहेगा | Life Operating System</title>
+  <!-- Google Fonts: Inter & Noto Sans Devanagari for clean bilingual typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons for crisp UI elements -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'Noto Sans Devanagari', 'sans-serif'],
+          },
+          colors: {
+            mast: {
+              50: '#fdf8f4',
+              100: '#faefe6',
+              200: '#f4decb',
+              500: '#e06f2e',
+              600: '#c85a1e',
+              emerald: '#0e7a5d',
+              navy: '#0f172a',
+              card: '#ffffff'
+            }
+          },
+          boxShadow: {
+            'soft': '0 8px 30px rgba(0,0,0,0.06)',
+            'float': '0 12px 36px rgba(224,111,46,0.18)'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    ::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+      border-radius: 4px;
+    }
+    .hide-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .hide-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    body {
+      background: radial-gradient(circle at 10% 20%, #f1f5f9 0%, #e2e8f0 100%);
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    @keyframes subtlePulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.08); opacity: 0.85; }
+    }
+    .pulse-bus {
+      animation: subtlePulse 2s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="h-full flex items-center justify-center p-0 sm:p-4 text-slate-800">
+
+  <!-- Main Mobile Frame Container -->
+  <div class="relative w-full max-w-md h-full sm:h-[860px] bg-slate-900 sm:rounded-[44px] shadow-2xl overflow-hidden flex flex-col border-[6px] border-slate-800/80">
+    
+    <!-- Phone Top Sensor Notch -->
+    <div class="hidden sm:flex justify-between items-center px-7 pt-3 pb-1 text-slate-400 text-xs font-semibold z-30 select-none">
+      <span id="currentPhoneTime">09:41</span>
+      <div class="w-20 h-4 bg-slate-950 rounded-full mx-auto flex items-center justify-center">
+        <div class="w-2.5 h-2.5 rounded-full bg-slate-800 mr-2"></div>
+        <div class="w-1.5 h-1.5 rounded-full bg-blue-950"></div>
+      </div>
+      <div class="flex items-center gap-1.5 text-[11px]">
+        <i class="fa-solid fa-signal"></i>
+        <i class="fa-solid fa-wifi"></i>
+        <i class="fa-solid fa-battery-full text-emerald-500"></i>
+      </div>
+    </div>
+
+    <!-- App Header -->
+    <header class="bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 text-white px-4 pt-3 pb-3 border-b border-slate-800 shadow-md z-20">
+      <div class="flex items-center justify-between">
+        
+        <!-- Brand & Tagline -->
+        <div class="flex items-center space-x-2.5">
+          <div class="w-9 h-9 rounded-2xl bg-gradient-to-tr from-amber-500 via-orange-500 to-rose-500 flex items-center justify-center shadow-lg shadow-orange-500/20">
+            <span class="font-extrabold text-white text-base tracking-tighter">M</span>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h1 class="text-lg font-black tracking-tight text-white leading-none">MAST</h1>
+              <span class="text-[9px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-1.5 py-0.5 rounded-full flex items-center gap-1">
+                <i class="fa-brands fa-google-drive text-[10px]"></i> <span data-i18n="badge_drive">Gmail Sync OK</span>
+              </span>
+            </div>
+            <p class="text-[11px] text-amber-300/90 font-medium tracking-wide" data-i18n="tagline">सब ठीक रहेगा</p>
+          </div>
+        </div>
+
+        <!-- Language Switcher & SOS & Donation -->
+        <div class="flex items-center gap-2">
+          <button onclick="triggerEmergencySOS()" class="w-8 h-8 rounded-full bg-red-600 hover:bg-red-700 text-white flex items-center justify-center transition shadow-md shadow-red-600/30 active:scale-90" title="इमरजेंसी SOS">
+            <i class="fa-solid fa-triangle-exclamation text-xs animate-bounce"></i>
+          </button>
+
+          <button id="langToggleBtn" onclick="toggleLanguage()" class="px-2.5 py-1 text-xs font-semibold rounded-full bg-slate-800 text-slate-200 border border-slate-700 hover:bg-slate-700 transition flex items-center gap-1.5 active:scale-95">
+            <i class="fa-solid fa-globe text-amber-400"></i>
+            <span id="langDisplay">हिं / EN</span>
+          </button>
+
+          <button onclick="openDonationModal()" class="w-8 h-8 rounded-full bg-rose-500/20 border border-rose-500/40 text-rose-400 hover:text-rose-300 flex items-center justify-center transition active:scale-90" title="सहयोग करें / Support">
+            <i class="fa-solid fa-heart text-sm animate-pulse"></i>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Screens Container (Scrollable) -->
+    <main id="screenContainer" class="flex-1 bg-slate-50 overflow-y-auto hide-scrollbar relative">
+      
+      <!-- ================= SCREEN 1: HOME ================= -->
+      <section id="screen-home" class="p-4 space-y-4">
+        
+        <!-- Welcome Card -->
+        <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-orange-500 via-amber-500 to-rose-500 p-4 text-white shadow-lg">
+          <div class="relative z-10">
+            <div class="flex justify-between items-start">
+              <div>
+                <span class="text-xs uppercase font-bold tracking-wider text-amber-100/80" data-i18n="home_greetings">शुभ प्रभात • परिवार</span>
+                <h2 class="text-xl font-extrabold mt-0.5 leading-snug" data-i18n="home_hero_title">आज सब मंगलमय होगा!</h2>
+              </div>
+              <span class="px-2 py-1 rounded-xl bg-black/20 text-[11px] backdrop-blur font-medium flex items-center gap-1">
+                <i class="fa-regular fa-calendar-check"></i> <span id="currentDateStr">28 Oct</span>
+              </span>
+            </div>
+            
+            <div class="mt-3 bg-white/15 backdrop-blur-md rounded-2xl p-2.5 text-xs text-white/95 border border-white/20 flex items-start gap-2">
+              <i class="fa-solid fa-quote-left text-amber-200 text-sm mt-0.5"></i>
+              <p class="italic leading-relaxed" data-i18n="home_daily_thought">"चिंता छोड़िए, अपनों का हाथ थामिए। हर समस्या का समाधान धीरे-धीरे मिल जाता है।"</p>
+            </div>
+          </div>
+          <div class="absolute -right-6 -bottom-8 w-32 h-32 rounded-full bg-white/10 blur-xl pointer-events-none"></div>
+        </div>
+
+        <!-- Privacy & Zero-Server Trust Strip -->
+        <div class="bg-emerald-50 border border-emerald-200/80 rounded-2xl p-2.5 flex items-center justify-between text-xs text-emerald-900 shadow-sm">
+          <div class="flex items-center gap-2">
+            <div class="w-7 h-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center text-xs">
+              <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <div>
+              <p class="font-bold text-[11px] leading-tight" data-i18n="privacy_badge_head">100% प्राइवेट • ज़ीरो सर्वर</p>
+              <p class="text-[10px] text-emerald-700" data-i18n="privacy_badge_sub">डाटा सीधे आपके निजी Gmail पर सुरक्षित</p>
+            </div>
+          </div>
+          <button onclick="triggerCloudBackupToast()" class="px-2 py-1 bg-white rounded-lg text-[10px] font-bold text-emerald-800 shadow-sm border border-emerald-200 active:scale-95">
+            <i class="fa-solid fa-arrows-rotate text-emerald-600 mr-1"></i><span data-i18n="btn_backup_now">बैकअप</span>
+          </button>
+        </div>
+
+        <!-- Quick Glance: Today's Priorities -->
+        <div>
+          <div class="flex justify-between items-center mb-2 px-1">
+            <h3 class="font-bold text-slate-800 text-sm flex items-center gap-1.5">
+              <i class="fa-solid fa-bell text-amber-500"></i>
+              <span data-i18n="home_section_today">आज का मुख्य एजेंडा</span>
+            </h3>
+            <span class="text-[11px] font-semibold text-orange-600 bg-orange-100/70 px-2 py-0.5 rounded-full" id="pendingTaskCount">3 कार्य बाकी</span>
+          </div>
+          <div class="space-y-2" id="homeGlanceList"></div>
+        </div>
+
+        <!-- Quick Action Hub -->
+        <div>
+          <h3 class="font-bold text-slate-800 text-sm mb-2 px-1" data-i18n="home_quick_actions">त्वरित सेवाएं (Quick Access)</h3>
+          <div class="grid grid-cols-2 gap-2.5">
+            <div onclick="switchScreen('vault')" class="bg-gradient-to-br from-amber-50 to-orange-50/60 p-3 rounded-2xl border border-amber-200/80 shadow-sm hover:border-amber-400 transition cursor-pointer active:scale-95 group">
+              <div class="flex justify-between items-start">
+                <div class="w-9 h-9 rounded-xl bg-amber-500 text-white flex items-center justify-center text-base shadow-sm group-hover:scale-105 transition">
+                  <i class="fa-solid fa-vault"></i>
+                </div>
+                <span class="text-[10px] bg-amber-200/60 text-amber-900 font-extrabold px-1.5 py-0.5 rounded-full flex items-center gap-1">
+                  <i class="fa-solid fa-lock text-[8px]"></i> 9 फाइल्स
+                </span>
+              </div>
+              <h4 class="font-bold text-slate-900 text-xs mt-2" data-i18n="tile_vault_title">लॉकर: बिल, सोना, डॉक्स</h4>
+              <p class="text-[10px] text-amber-800 font-medium" data-i18n="tile_vault_sub">वारंटी, सोना-चांदी, आधार</p>
+            </div>
+
+            <div onclick="switchScreen('bus')" class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm hover:border-orange-300 transition cursor-pointer active:scale-95 group">
+              <div class="flex justify-between items-start">
+                <div class="w-9 h-9 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center text-base group-hover:bg-blue-600 group-hover:text-white transition">
+                  <i class="fa-solid fa-bus-simple"></i>
+                </div>
+                <span class="text-[10px] bg-emerald-100 text-emerald-700 font-bold px-1.5 py-0.5 rounded-full">लाइव</span>
+              </div>
+              <h4 class="font-bold text-slate-800 text-xs mt-2" data-i18n="tile_bus_title">स्कूल बस लाइव</h4>
+              <p class="text-[10px] text-slate-500" data-i18n="tile_bus_sub">बस 12 मिनट दूर है</p>
+            </div>
+
+            <div onclick="switchScreen('reminders')" class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm hover:border-orange-300 transition cursor-pointer active:scale-95 group">
+              <div class="flex justify-between items-start">
+                <div class="w-9 h-9 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center text-base group-hover:bg-rose-500 group-hover:text-white transition">
+                  <i class="fa-solid fa-pills"></i>
+                </div>
+                <span class="text-[10px] bg-rose-100 text-rose-700 font-bold px-1.5 py-0.5 rounded-full">डॉ. पर्चा Rx</span>
+              </div>
+              <h4 class="font-bold text-slate-800 text-xs mt-2" data-i18n="tile_med_title">दवाइयां (Dawa)</h4>
+              <p class="text-[10px] text-slate-500" data-i18n="tile_med_sub">दादाजी - 08:30 PM</p>
+            </div>
+
+            <div onclick="switchScreen('diary')" class="bg-white p-3 rounded-2xl border border-slate-200 shadow-sm hover:border-orange-300 transition cursor-pointer active:scale-95 group">
+              <div class="flex justify-between items-start">
+                <div class="w-9 h-9 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center text-base group-hover:bg-purple-600 group-hover:text-white transition">
+                  <i class="fa-solid fa-feather-pointed"></i>
+                </div>
+                <i class="fa-brands fa-whatsapp text-emerald-500 text-sm"></i>
+              </div>
+              <h4 class="font-bold text-slate-800 text-xs mt-2" data-i18n="tile_diary_title">डायरी व विचार</h4>
+              <p class="text-[10px] text-slate-500" data-i18n="tile_diary_sub">कविता, विचार WhatsApp शेयर</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Household Monthly Expense Summary -->
+        <div class="bg-white rounded-3xl p-3.5 border border-slate-200 shadow-sm space-y-2.5">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <div class="w-7 h-7 rounded-lg bg-teal-500/15 text-teal-700 flex items-center justify-center text-xs font-bold">
+                <i class="fa-solid fa-indian-rupee-sign"></i>
+              </div>
+              <div>
+                <h4 class="font-bold text-xs text-slate-900" data-i18n="expense_widget_title">घरेलू खर्च व बजट</h4>
+                <p class="text-[10px] text-slate-500" data-i18n="expense_widget_sub">इस माह: ₹42,500 खर्च • बचत: ₹12,500</p>
+              </div>
+            </div>
+            <button onclick="openNewExpenseModal()" class="px-2.5 py-1 bg-teal-50 hover:bg-teal-100 text-teal-800 text-[10px] font-bold rounded-lg border border-teal-200 active:scale-95 transition">
+              + खर्च जोड़ें
+            </button>
+          </div>
+          <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden flex">
+            <div class="bg-emerald-500 h-full" style="width: 45%"></div>
+            <div class="bg-amber-500 h-full" style="width: 30%"></div>
+            <div class="bg-purple-500 h-full" style="width: 15%"></div>
+            <div class="bg-slate-300 h-full" style="width: 10%"></div>
+          </div>
+          <div class="flex items-center justify-between text-[10px] text-slate-500 font-semibold pt-0.5">
+            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500"></span> राशन (45%)</span>
+            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-amber-500"></span> फीस/बिल (30%)</span>
+            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-purple-500"></span> दवा (15%)</span>
+          </div>
+        </div>
+
+        <!-- Ad-Free Donation Card -->
+        <div class="rounded-2xl border border-amber-300/80 bg-amber-50/70 p-3.5 flex items-center justify-between">
+          <div class="pr-2">
+            <h5 class="text-xs font-bold text-amber-950 flex items-center gap-1.5">
+              <i class="fa-solid fa-hand-holding-heart text-amber-600"></i>
+              <span data-i18n="home_adfree_title">100% विज्ञापन-मुक्त अनुभव</span>
+            </h5>
+            <p class="text-[10px] text-amber-800 mt-0.5" data-i18n="home_adfree_sub">MAST आपके परिवार के लिए है। आत्मनिर्भर रखने हेतु स्वेच्छा से सहयोग करें।</p>
+          </div>
+          <button onclick="openDonationModal()" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold shadow-md shadow-amber-600/20 whitespace-nowrap active:scale-95">
+            <span data-i18n="btn_donate_small">सहयोग करें</span>
+          </button>
+        </div>
+
+      </section>
+
+      <!-- ================= SCREEN 2: REMINDERS & MEDICINE ================= -->
+      <section id="screen-reminders" class="hidden p-4 space-y-4">
+        <div class="flex justify-between items-center">
+          <div>
+            <h2 class="text-lg font-black text-slate-900" data-i18n="rem_heading">रिमाइंडर और दवाइयां</h2>
+            <p class="text-xs text-slate-500" data-i18n="rem_subheading">फीस, बिल, दवा और खास दिन</p>
+          </div>
+          <button onclick="openNewReminderModal()" class="px-3 py-1.5 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl text-xs font-bold shadow-md shadow-orange-500/20 flex items-center gap-1 active:scale-95">
+            <i class="fa-solid fa-plus"></i> <span data-i18n="btn_add_reminder">नया जोड़ें</span>
+          </button>
+        </div>
+
+        <div class="flex items-center gap-1.5 overflow-x-auto pb-1 hide-scrollbar">
+          <button onclick="filterReminders('all')" id="tab-rem-all" class="rem-tab-btn px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-900 text-white whitespace-nowrap">
+            <span data-i18n="tab_all">सभी (All)</span>
+          </button>
+          <button onclick="filterReminders('med')" id="tab-rem-med" class="rem-tab-btn px-3 py-1.5 rounded-full text-xs font-semibold bg-white text-slate-600 border border-slate-200 whitespace-nowrap">
+            💊 <span data-i18n="tab_meds">दवाइयां व पर्चा (Rx)</span>
+          </button>
+          <button onclick="filterReminders('bills')" id="tab-rem-bills" class="rem-tab-btn px-3 py-1.5 rounded-full text-xs font-semibold bg-white text-slate-600 border border-slate-200 whitespace-nowrap">
+            💳 <span data-i18n="tab_bills">फीस व बिल</span>
+          </button>
+          <button onclick="filterReminders('bday')" id="tab-rem-bday" class="rem-tab-btn px-3 py-1.5 rounded-full text-xs font-semibold bg-white text-slate-600 border border-slate-200 whitespace-nowrap">
+            🎂 <span data-i18n="tab_events">बर्थडे / उत्सव</span>
+          </button>
+        </div>
+
+        <div class="bg-white rounded-3xl p-3.5 border border-slate-200 shadow-sm">
+          <div class="flex items-center justify-between mb-2.5">
+            <div>
+              <h3 class="text-xs font-extrabold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-rose-500 animate-ping"></span>
+                <span data-i18n="rem_med_today_title">दवा लॉग (Medicine Intake Today)</span>
+              </h3>
+              <p class="text-[10px] text-slate-500" data-i18n="rem_rx_sub">डॉक्टर का असली पर्चा साथ में सुरक्षित</p>
+            </div>
+            <span class="text-[10px] text-slate-400" data-i18n="rem_tap_confirm">क्लिक करके टिक करें</span>
+          </div>
+          <div class="space-y-2" id="medicineListContainer"></div>
+        </div>
+
+        <div>
+          <h3 class="text-xs font-extrabold text-slate-700 uppercase tracking-wider mb-2 px-1" data-i18n="rem_upcoming_title">
+            आगामी भुगतान और तिथियां
+          </h3>
+          <div class="space-y-2.5" id="generalRemindersContainer"></div>
+        </div>
+      </section>
+
+      <!-- ================= SCREEN: VAULT ================= -->
+      <section id="screen-vault" class="hidden p-4 space-y-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-lg font-black text-slate-900" data-i18n="vault_title">पारिवारिक लॉकर (Vault)</h2>
+            <p class="text-xs text-slate-500" data-i18n="vault_subtitle">घरेलू सामान, वारंटी, सोना-चांदी व डॉक्स</p>
+          </div>
+          <button onclick="openNewVaultItemModal()" class="px-3 py-1.5 bg-gradient-to-r from-amber-600 to-orange-600 text-white rounded-xl text-xs font-bold shadow-md shadow-amber-600/20 flex items-center gap-1 active:scale-95">
+            <i class="fa-solid fa-plus"></i> <span data-i18n="btn_vault_add">नया जोड़ें</span>
+          </button>
+        </div>
+
+        <div class="flex items-center gap-1.5 bg-slate-200/80 p-1 rounded-2xl">
+          <button onclick="switchVaultTab('appliances')" id="subtab-appliances" class="vault-subtab flex-1 py-1.5 text-center text-xs font-bold rounded-xl bg-white text-slate-900 shadow-sm transition">
+            <span data-i18n="vault_tab_appliance">घरेलू सामान व वारंटी</span>
+          </button>
+          <button onclick="switchVaultTab('gold')" id="subtab-gold" class="vault-subtab flex-1 py-1.5 text-center text-xs font-bold rounded-xl text-slate-600 transition">
+            <span data-i18n="vault_tab_gold">सोना-चांदी (Gold)</span>
+          </button>
+          <button onclick="switchVaultTab('documents')" id="subtab-docs" class="vault-subtab flex-1 py-1.5 text-center text-xs font-bold rounded-xl text-slate-600 transition">
+            <span data-i18n="vault_tab_docs">दस्तावेज़ (Docs)</span>
+          </button>
+        </div>
+
+        <div id="vault-appliances-content" class="space-y-3">
+          <div class="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-2.5 text-xs text-amber-950 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <i class="fa-solid fa-triangle-exclamation text-amber-600 text-sm"></i>
+              <div>
+                <p class="font-bold text-[11px]" data-i18n="vault_warranty_alert_title">वारंटी समाप्ति अलर्ट (Active Alert)</p>
+                <p class="text-[10px] text-amber-900" data-i18n="vault_warranty_alert_sub">एलजी इन्वर्टर एसी की वारंटी 18 दिनों में समाप्त हो रही है</p>
+              </div>
+            </div>
+            <button onclick="viewWarrantyDoc('एलजी 1.5 टन डुअल इन्वर्टर एसी')" class="px-2 py-1 bg-amber-600 text-white rounded-lg text-[10px] font-bold">बिल देखें</button>
+          </div>
+          <div class="space-y-2.5" id="appliancesListContainer"></div>
+        </div>
+
+        <div id="vault-gold-content" class="hidden space-y-3">
+          <div class="bg-gradient-to-r from-amber-600 via-amber-500 to-yellow-500 rounded-3xl p-4 text-white shadow-md relative overflow-hidden">
+            <div class="relative z-10">
+              <span class="text-[10px] uppercase font-bold tracking-wider text-amber-100" data-i18n="gold_total_label">पारिवारिक स्वर्ण संचय (Safe Vault)</span>
+              <div class="flex items-baseline gap-2 mt-1">
+                <h3 class="text-2xl font-black">68.5 <span class="text-xs font-semibold">ग्राम सोना (Gold)</span></h3>
+                <span class="text-xs text-amber-100">• 250 ग्राम चांदी</span>
+              </div>
+              <p class="text-[10px] text-amber-100/90 mt-1 flex items-center gap-1">
+                <i class="fa-solid fa-certificate text-amber-200"></i>
+                <span data-i18n="gold_hallmark_note">सभी आभूषण 916 BIS हॉलमार्क पक्के बिल सहित सुरक्षित</span>
+              </p>
+            </div>
+          </div>
+          <div class="space-y-2.5" id="goldItemsListContainer"></div>
+        </div>
+
+        <div id="vault-docs-content" class="hidden space-y-3">
+          <div class="flex items-center gap-1.5 overflow-x-auto pb-1 hide-scrollbar">
+            <button onclick="filterFamilyDocs('all')" id="doc-member-all" class="doc-member-chip px-3 py-1 rounded-full text-xs font-bold bg-slate-900 text-white whitespace-nowrap">सभी सदस्य</button>
+            <button onclick="filterFamilyDocs('babu')" id="doc-member-babu" class="doc-member-chip px-3 py-1 rounded-full text-xs font-bold bg-white text-slate-700 border border-slate-200 whitespace-nowrap">👴 बाबूजी (Father)</button>
+            <button onclick="filterFamilyDocs('amma')" id="doc-member-amma" class="doc-member-chip px-3 py-1 rounded-full text-xs font-bold bg-white text-slate-700 border border-slate-200 whitespace-nowrap">👵 अम्मा (Mother)</button>
+            <button onclick="filterFamilyDocs('self')" id="doc-member-self" class="doc-member-chip px-3 py-1 rounded-full text-xs font-bold bg-white text-slate-700 border border-slate-200 whitespace-nowrap">🧑 स्वयं (Self)</button>
+            <button onclick="filterFamilyDocs('kids')" id="doc-member-kids" class="doc-member-chip px-3 py-1 rounded-full text-xs font-bold bg-white text-slate-700 border border-slate-200 whitespace-nowrap">👶 बच्चे (Kids)</button>
+          </div>
+          <div class="space-y-2.5" id="familyDocsListContainer"></div>
+        </div>
+      </section>
+
+      <!-- ================= SCREEN 3: SCHOOL BUS TRACKER ================= -->
+      <section id="screen-bus" class="hidden p-4 space-y-3.5">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-lg font-black text-slate-900" data-i18n="bus_title">स्कूल बस लाइव ट्रैकर</h2>
+            <p class="text-xs text-slate-500" data-i18n="bus_subtitle">सुरक्षित सफर, समय पर सूचना</p>
+          </div>
+          <div class="bg-slate-200 p-1 rounded-xl flex items-center text-[11px] font-bold">
+            <button id="busModeParentBtn" onclick="setBusRole('parent')" class="px-2.5 py-1 rounded-lg bg-white text-slate-900 shadow-sm transition">
+              <span data-i18n="bus_mode_parent">पेरेंट्स</span>
+            </button>
+            <button id="busModeDriverBtn" onclick="setBusRole('driver')" class="px-2.5 py-1 rounded-lg text-slate-600 transition">
+              <span data-i18n="bus_mode_driver">ड्राइवर मोड</span>
+            </button>
+          </div>
+        </div>
+
+        <div id="parentBusView" class="space-y-3">
+          <div class="relative bg-slate-900 rounded-3xl h-64 overflow-hidden border border-slate-700 shadow-md">
+            <canvas id="busMapCanvas" class="w-full h-full block"></canvas>
+            <div class="absolute top-3 left-3 bg-white/95 backdrop-blur-md rounded-2xl p-2.5 border border-slate-200 shadow-md flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-orange-500 text-white flex flex-col items-center justify-center font-black">
+                <span id="etaMinutes" class="text-base leading-none">12</span>
+                <span class="text-[8px] uppercase tracking-tighter" data-i18n="bus_min">मिनट</span>
+              </div>
+              <div>
+                <span class="text-[10px] text-slate-500 block uppercase font-bold" data-i18n="bus_eta_label">अनुमानित आगमन (ETA)</span>
+                <span class="text-xs font-black text-slate-800" id="nextStopName">शास्त्री नगर स्टॉप #4</span>
+              </div>
+            </div>
+            <button onclick="recenterBusMap()" class="absolute bottom-3 right-3 w-9 h-9 bg-white text-slate-800 rounded-full shadow-lg flex items-center justify-center active:scale-90 text-sm">
+              <i class="fa-solid fa-location-crosshairs text-orange-600"></i>
+            </button>
+            <div class="absolute bottom-3 left-3 bg-slate-950/80 backdrop-blur text-white px-2.5 py-1 rounded-full text-[10px] font-semibold flex items-center gap-1.5 border border-slate-700">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span id="busSpeedIndicator">गति: 32 km/h</span>
+            </div>
+          </div>
+
+          <div class="bg-white rounded-2xl p-3.5 border border-slate-200 shadow-sm space-y-3">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+              <div class="flex items-center gap-2.5">
+                <div class="w-9 h-9 rounded-xl bg-amber-500/15 text-amber-600 flex items-center justify-center text-sm font-bold">B-12</div>
+                <div>
+                  <h4 class="font-bold text-xs text-slate-900">डीपीएस स्कूल - बस रूट #7</h4>
+                  <p class="text-[10px] text-slate-500">ड्राइवर: रमेश जी (+91 98765-XXXXX)</p>
+                </div>
+              </div>
+              <a href="tel:9876543210" class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs shadow-sm hover:bg-emerald-200 active:scale-90">
+                <i class="fa-solid fa-phone"></i>
+              </a>
+            </div>
+
+            <div class="space-y-1.5">
+              <div class="flex justify-between text-[11px] font-semibold text-slate-600">
+                <span class="text-emerald-600 font-bold">✓ स्कूल से प्रस्थान (2:30 PM)</span>
+                <span class="text-orange-600 font-bold" data-i18n="bus_near_stop">आपके स्टॉप के करीब</span>
+                <span class="text-slate-400">अंतिम स्टॉप</span>
+              </div>
+              <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                <div id="routeProgressBar" class="bg-gradient-to-r from-emerald-500 to-amber-500 h-full rounded-full transition-all duration-700" style="width: 65%;"></div>
+              </div>
+            </div>
+
+            <div class="flex items-center justify-between pt-1 text-xs">
+              <span class="text-slate-600 font-medium" data-i18n="bus_alert_toggle">स्टॉप से 500m पहले घंटी बजाएं</span>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" checked class="sr-only peer">
+                <div class="w-9 h-5 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-orange-500"></div>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div id="driverBusView" class="hidden space-y-3">
+          <div class="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-3.5 text-xs text-amber-950">
+            <p class="font-bold mb-0.5" data-i18n="driver_notice_title">🚌 स्कूल ड्राइवर कंसोल</p>
+            <p class="text-[11px] text-amber-900 leading-relaxed" data-i18n="driver_notice_sub">
+              स्कूल में प्रमोशन के तहत ड्राइवर को अलग डिवाइस नहीं चाहिए। बस इस स्विच को ऑन करें और ट्रिप शुरू करें।
+            </p>
+          </div>
+
+          <div class="bg-white rounded-3xl p-5 border border-slate-200 text-center space-y-4 shadow-sm">
+            <div class="w-16 h-16 rounded-3xl mx-auto flex items-center justify-center text-3xl shadow-lg" id="driverStatusCircle" style="background: #f1f5f9; color: #64748b;">
+              <i class="fa-solid fa-power-off"></i>
+            </div>
+            
+            <div>
+              <h3 class="text-base font-extrabold text-slate-800" id="driverStatusText" data-i18n="driver_trip_stopped">ट्रिप अभी बंद है (Trip Inactive)</h3>
+              <p class="text-xs text-slate-500 mt-1" id="driverSubText" data-i18n="driver_tap_start">बच्चों को बैठाने के बाद 'Start Trip' दबाएं</p>
+            </div>
+
+            <button id="driverActionBtn" onclick="toggleDriverTrip()" class="w-full py-3.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-sm shadow-lg shadow-emerald-600/30 active:scale-95 transition flex items-center justify-center gap-2">
+              <i class="fa-solid fa-play"></i> <span id="driverBtnLabel" data-i18n="btn_start_trip">ट्रिप शुरू करें (Start Trip)</span>
+            </button>
+            
+            <p class="text-[10px] text-slate-400 flex items-center justify-center gap-1">
+              <i class="fa-solid fa-battery-half text-emerald-500"></i>
+              <span data-i18n="driver_battery_save">बैटरी सेवर तकनीक: केवल यात्रा के दौरान लाइव GPS</span>
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= SCREEN 4: DIARY ================= -->
+      <section id="screen-diary" class="hidden p-4 space-y-4">
+        <div class="flex justify-between items-center">
+          <div>
+            <h2 class="text-lg font-black text-slate-900" data-i18n="diary_title">पर्सनल डायरी व विचार</h2>
+            <p class="text-xs text-slate-500" data-i18n="diary_subtitle">कविताएं, मन की बात और WhatsApp शेयर</p>
+          </div>
+          <button onclick="openNewDiaryModal()" class="px-3 py-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl text-xs font-bold shadow-md shadow-purple-600/20 flex items-center gap-1 active:scale-95">
+            <i class="fa-solid fa-pen-nib"></i> <span data-i18n="btn_new_entry">नया लिखें</span>
+          </button>
+        </div>
+
+        <div class="flex items-center gap-1.5 overflow-x-auto pb-1 hide-scrollbar">
+          <button onclick="filterDiary('all')" id="tab-diary-all" class="diary-tab-btn px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-900 text-white whitespace-nowrap">
+            <span data-i18n="tab_diary_all">सभी रचनाएं</span>
+          </button>
+          <button onclick="filterDiary('kavita')" id="tab-diary-kavita" class="diary-tab-btn px-3 py-1.5 rounded-full text-xs font-semibold bg-white text-slate-600 border border-slate-200 whitespace-nowrap">
+            ✍️ <span data-i18n="tab_kavita">कविता (Poetry)</span>
+          </button>
+          <button onclick="filterDiary('vichar')" id="tab-diary-vichar" class="diary-tab-btn px-3 py-1.5 rounded-full text-xs font-semibold bg-white text-slate-600 border border-slate-200 whitespace-nowrap">
+            💡 <span data-i18n="tab_vichar">विचार (Thoughts)</span>
+          </button>
+        </div>
+
+        <div class="space-y-3" id="diaryCardsContainer"></div>
+      </section>
+
+      <!-- ================= SCREEN 5: FAMILY CONNECT ================= -->
+      <section id="screen-family" class="hidden p-4 space-y-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <h2 class="text-lg font-black text-slate-900" data-i18n="fam_title">फैमिली कनेक्ट व इंटरकॉम</h2>
+            <p class="text-xs text-slate-500" data-i18n="fam_subtitle">घर के सदस्यों से तेज संपर्क</p>
+          </div>
+          <span class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs font-bold">
+            <i class="fa-solid fa-user-group"></i>
+          </span>
+        </div>
+
+        <div class="bg-gradient-to-r from-blue-900 to-indigo-900 rounded-3xl p-3.5 text-white shadow-lg space-y-2.5">
+          <div class="flex items-center justify-between">
+            <span class="text-xs uppercase font-extrabold tracking-wider text-amber-300 flex items-center gap-1.5">
+              <i class="fa-solid fa-bullhorn animate-bounce"></i> <span data-i18n="intercom_bar_title">घर का इंटरकॉम (Instant Buzzer)</span>
+            </span>
+            <span class="text-[10px] text-slate-300" data-i18n="intercom_instant">एक टैप में सबको पिंग</span>
+          </div>
+
+          <div class="grid grid-cols-3 gap-2">
+            <button onclick="sendIntercomAlert('dinner')" class="bg-white/10 hover:bg-white/20 active:scale-95 border border-white/20 rounded-2xl p-2 text-center transition">
+              <span class="text-lg block">🍲</span>
+              <span class="text-[11px] font-bold block mt-0.5" data-i18n="buzzer_dinner">खाना तैयार है</span>
+            </button>
+            <button onclick="sendIntercomAlert('come_home')" class="bg-white/10 hover:bg-white/20 active:scale-95 border border-white/20 rounded-2xl p-2 text-center transition">
+              <span class="text-lg block">🏡</span>
+              <span class="text-[11px] font-bold block mt-0.5" data-i18n="buzzer_home">घर आ जाओ</span>
+            </button>
+            <button onclick="sendIntercomAlert('emergency')" class="bg-rose-500/30 hover:bg-rose-500/40 active:scale-95 border border-rose-400/40 rounded-2xl p-2 text-center transition">
+              <span class="text-lg block">🚨</span>
+              <span class="text-[11px] font-bold block mt-0.5 text-rose-300" data-i18n="buzzer_help">मदद चाहिए</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden flex flex-col h-[380px]">
+          <div class="p-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <div class="flex -space-x-2 overflow-hidden">
+                <span class="inline-block h-6 w-6 rounded-full ring-2 ring-white bg-amber-400 text-center text-xs font-bold leading-6">पा</span>
+                <span class="inline-block h-6 w-6 rounded-full ring-2 ring-white bg-rose-400 text-center text-xs font-bold leading-6">माँ</span>
+                <span class="inline-block h-6 w-6 rounded-full ring-2 ring-white bg-blue-400 text-center text-xs font-bold leading-6">रो</span>
+              </div>
+              <span class="text-xs font-bold text-slate-800" data-i18n="chat_group_name">प्यारा परिवार (Family Circle)</span>
+            </div>
+            <span class="text-[10px] text-emerald-600 font-semibold flex items-center gap-1">
+              <i class="fa-solid fa-lock text-[9px]"></i> <span data-i18n="chat_encrypted">एन्क्रिप्टेड</span>
+            </span>
+          </div>
+
+          <div id="chatMessagesList" class="flex-1 p-3 space-y-2.5 overflow-y-auto bg-slate-50/50 text-xs"></div>
+
+          <form onsubmit="handleSendFamilyMessage(event)" class="p-2 bg-white border-t border-slate-200 flex items-center gap-1.5">
+            <input type="text" id="chatInputMessage" placeholder="परिवार को संदेश लिखें..." class="flex-1 bg-slate-100 text-xs rounded-xl px-3 py-2 outline-none border border-transparent focus:border-orange-400 transition" />
+            <button type="button" onclick="recordMockVoiceNote()" class="w-8 h-8 rounded-xl text-slate-500 hover:text-orange-600 flex items-center justify-center transition">
+              <i class="fa-solid fa-microphone"></i>
+            </button>
+            <button type="submit" class="w-8 h-8 rounded-xl bg-orange-500 hover:bg-orange-600 text-white flex items-center justify-center shadow-md shadow-orange-500/20 active:scale-95 transition">
+              <i class="fa-solid fa-paper-plane text-xs"></i>
+            </button>
+          </form>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Bottom Navigation Bar -->
+    <nav class="bg-white border-t border-slate-200 px-2 py-1.5 flex justify-around items-center z-20 shadow-lg">
+      <button onclick="switchScreen('home')" id="nav-home" class="nav-btn flex flex-col items-center py-1 px-2 text-orange-600 transition">
+        <i class="fa-solid fa-house-chimney text-base"></i>
+        <span class="text-[9px] font-bold mt-1" data-i18n="nav_home">होम</span>
+      </button>
+
+      <button onclick="switchScreen('vault')" id="nav-vault" class="nav-btn flex flex-col items-center py-1 px-2 text-slate-400 hover:text-slate-700 transition">
+        <i class="fa-solid fa-vault text-base"></i>
+        <span class="text-[9px] font-medium mt-1" data-i18n="nav_vault">लॉकर</span>
+      </button>
+
+      <button onclick="switchScreen('reminders')" id="nav-reminders" class="nav-btn flex flex-col items-center py-1 px-2 text-slate-400 hover:text-slate-700 transition">
+        <i class="fa-solid fa-bell text-base"></i>
+        <span class="text-[9px] font-medium mt-1" data-i18n="nav_reminders">रिमाइंडर</span>
+      </button>
+
+      <button onclick="switchScreen('bus')" id="nav-bus" class="nav-btn flex flex-col items-center py-1 px-2 text-slate-400 hover:text-slate-700 transition relative">
+        <div class="relative">
+          <i class="fa-solid fa-bus text-base"></i>
+          <span class="absolute -top-1 -right-2 w-2 h-2 rounded-full bg-emerald-500"></span>
+        </div>
+        <span class="text-[9px] font-medium mt-1" data-i18n="nav_bus">बस ट्रैकर</span>
+      </button>
+
+      <button onclick="switchScreen('diary')" id="nav-diary" class="nav-btn flex flex-col items-center py-1 px-2 text-slate-400 hover:text-slate-700 transition">
+        <i class="fa-solid fa-book-open text-base"></i>
+        <span class="text-[9px] font-medium mt-1" data-i18n="nav_diary">डायरी</span>
+      </button>
+
+      <button onclick="switchScreen('family')" id="nav-family" class="nav-btn flex flex-col items-center py-1 px-2 text-slate-400 hover:text-slate-700 transition">
+        <i class="fa-solid fa-heart text-base"></i>
+        <span class="text-[9px] font-medium mt-1" data-i18n="nav_family">परिवार</span>
+      </button>
+    </nav>
+
+    <!-- Modal: View Doctor's Prescription (Rx) -->
+    <div id="rxPrescriptionModal" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-sm">
+      <div class="bg-white w-full max-w-sm rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl space-y-3.5 max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+          <div class="flex items-center gap-2">
+            <span class="w-8 h-8 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center text-xs font-bold">Rx</span>
+            <h3 class="font-extrabold text-slate-900 text-sm" id="rxModalTitle">डॉक्टर का पर्चा (Prescription)</h3>
+          </div>
+          <button onclick="closeRxModal()" class="w-7 h-7 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center text-xs active:scale-90">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <div class="border-2 border-dashed border-rose-200 bg-rose-50/40 rounded-2xl p-4 text-xs space-y-3">
+          <div class="flex justify-between items-start border-b border-rose-200/80 pb-2">
+            <div>
+              <p class="font-black text-rose-950 text-sm" id="rxDoctorName">डॉ. वी. के. शर्मा (MD Med)</p>
+              <p class="text-[10px] text-rose-700" id="rxHospitalName">अपोलो क्लीनिक, नई दिल्ली</p>
+            </div>
+            <span class="text-[10px] bg-rose-100 text-rose-800 font-bold px-2 py-0.5 rounded-full" id="rxDate">15 Oct 2026</span>
+          </div>
+
+          <div class="space-y-1.5">
+            <p class="text-[11px] font-bold text-slate-800">मरीज का नाम: <span id="rxPatientName" class="font-normal text-slate-700">दादाजी (72 वर्ष)</span></p>
+            <div class="bg-white p-3 rounded-xl border border-rose-100 space-y-1">
+              <p class="font-bold text-slate-800 flex items-center gap-1.5">
+                <i class="fa-solid fa-prescription text-rose-600"></i>
+                <span id="rxMedicineName">Telmisartan 40mg + Amlodipine 5mg</span>
+              </p>
+              <p class="text-[10px] text-slate-600" id="rxInstructions">रोजाना सुबह 8:30 बजे नाश्ते के बाद 1 गोली पानी से लें।</p>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between text-[10px] text-rose-900 pt-1">
+            <span class="flex items-center gap-1"><i class="fa-brands fa-google-drive"></i> पर्चा Gmail पर सुरक्षित</span>
+            <span class="font-bold">फाइल: Rx_Scan_01.pdf</span>
+          </div>
+        </div>
+
+        <div class="flex gap-2">
+          <button onclick="showToast('पर्चा डाउनलोड हो रहा है...', 'fa-solid fa-download text-emerald-400')" class="flex-1 py-2.5 bg-slate-900 text-white rounded-xl text-xs font-bold active:scale-95 transition flex items-center justify-center gap-1.5">
+            <i class="fa-solid fa-file-arrow-down"></i> <span>डाउनलोड / प्रिंट</span>
+          </button>
+          <button onclick="closeRxModal()" class="px-4 py-2.5 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold active:scale-95 transition">
+            बंद करें
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal: View Document / Bill / Warranty Card -->
+    <div id="docViewerModal" class="hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-sm">
+      <div class="bg-white w-full max-w-sm rounded-t-3xl sm:rounded-3xl p-5 shadow-2xl space-y-3.5 max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center pb-2 border-b border-slate-100">
+          <div class="flex items-center gap-2">
+            <span class="w-8 h-8 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center text-xs font-bold">
+              <i class="fa-solid fa-receipt"></i>
+            </span>
+            <h3 class="font-extrabold text-slate-900 text-sm" id="docViewerTitle">दस्तावेज़ विवरण</h3>

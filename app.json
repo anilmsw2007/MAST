@@ -1,0 +1,21 @@
+{
+  "expo": {
+    "name": "MAST Life OS",
+    "slug": "mast-life-os",
+    "version": "1.0.0",
+    "icon": "./assets/icon.png",
+    "sdkVersion": "58.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "com.mast.lifeos",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/icon.png",
+        "backgroundColor": "#0f172a"
+      }
+    }
+  }
+}
