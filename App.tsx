@@ -5013,7 +5013,7 @@ const [activeTab, setActiveTab] = useState<TabType>('home');
       );
       return;
     }
-    const upiUrl = `upi://pay?pa=mastlifeos@upi&pn=MAST%20Life%20OS&am=${cleanAmt}&cu=INR&tn=Support%20MAST%20Voluntarily`;
+    const upiUrl = `upi://pay?pa=9451605191@ptyes&pn=MAST%20Life%20OS&am=${cleanAmt}&cu=INR&tn=Support%20MAST%20Voluntarily`;
     try {
       const supported = await Linking.canOpenURL(upiUrl);
       if (supported) {
@@ -5022,12 +5022,12 @@ const [activeTab, setActiveTab] = useState<TabType>('home');
         Alert.alert(
           'UPI Payment Support',
           lang === 'hi'
-            ? `सीधे UPI ऐप नहीं खुला। आप PhonePe, Google Pay या Paytm पर UPI ID: mastlifeos@upi डालकर ₹${cleanAmt} सहयोग भेज सकते हैं।`
-            : `No UPI app opened automatically. You can send ₹${cleanAmt} directly to UPI ID: mastlifeos@upi via PhonePe/GPay.`
+            ? `सीधे UPI ऐप नहीं खुला। आप PhonePe, Google Pay या Paytm पर UPI ID: 9451605191@ptyes डालकर ₹${cleanAmt} सहयोग भेज सकते हैं।`
+            : `No UPI app opened automatically. You can send ₹${cleanAmt} directly to UPI ID: 9451605191@ptyes via PhonePe/GPay.`
         );
       }
     } catch (e) {
-      Alert.alert('UPI Support', `UPI ID: mastlifeos@upi (₹${cleanAmt})`);
+      Alert.alert('UPI Support', `UPI ID: 9451605191@ptyes (₹${cleanAmt})`);
     }
     setCustomDonationInput('');
     setIsDonateModalOpen(false);
@@ -11483,7 +11483,7 @@ const [activeTab, setActiveTab] = useState<TabType>('home');
                   🔒 {lang === 'hi' ? 'PhonePe • Google Pay • Paytm • BHIM UPI द्वारा 100% सुरक्षित' : '100% Secure via PhonePe, GPay, Paytm & UPI'}
                 </Text>
                 <Text style={{ fontSize: 10, color: '#94a3b8', marginTop: 2 }}>
-                  UPI VPA: mastlifeos@upi
+                  UPI VPA: 9451605191@ptyes
                 </Text>
               </View>
 

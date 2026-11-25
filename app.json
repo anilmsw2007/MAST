@@ -2,7 +2,7 @@
   "expo": {
     "name": "MAST Life OS",
     "slug": "mast-life-os",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "icon": "./assets/icon.png",
     "sdkVersion": "58.0.0",
     "orientation": "portrait",
@@ -15,7 +15,8 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/icon.png",
         "backgroundColor": "#0f172a"
-      }
+      },
+      "versionCode": 2
     }
   }
 }
