@@ -11329,6 +11329,36 @@ const [activeTab, setActiveTab] = useState<TabType>('home');
                 </View>
               </View>
 
+              {/* Privacy Policy In-App Button */}
+              <TouchableOpacity
+                style={{
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  backgroundColor: isDarkMode ? '#0f172a' : '#f8fafc',
+                  padding: 12,
+                  borderRadius: 14,
+                  borderWidth: 1,
+                  borderColor: isDarkMode ? '#334155' : '#e2e8f0'
+                }}
+                onPress={() => {
+                  Linking.openURL('https://anilmsw2007.github.io/MAST/docs/privacy_policy.html');
+                }}
+              >
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                  <Text style={{ fontSize: 18 }}>📜</Text>
+                  <View>
+                    <Text style={{ fontSize: 13, fontWeight: '600', color: isDarkMode ? '#f8fafc' : '#0f172a' }}>
+                      {lang === 'hi' ? 'गोपनीयता नीति (Privacy Policy)' : 'Privacy Policy'}
+                    </Text>
+                    <Text style={{ fontSize: 11, color: '#64748b' }}>
+                      {lang === 'hi' ? '100% ऑन-डिवाइस डेटा सुरक्षा नियम' : '100% on-device private & secure'}
+                    </Text>
+                  </View>
+                </View>
+                <Text style={{ fontSize: 14, color: '#64748b', fontWeight: 'bold' }}>➔</Text>
+              </TouchableOpacity>
+
               {/* Support & Donate Button */}
               <TouchableOpacity
                 style={{
